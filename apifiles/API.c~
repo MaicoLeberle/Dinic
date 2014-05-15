@@ -99,36 +99,12 @@ int ImprimirResumidero(DovahkiinP D);
 	, donde esto representa el lado xy, con C(xy) = c. Tener en cuenta que al
 	imprimir los vértices x e y cuando se lo requeriese, se deberán usar estos
 	valores usados en el input. */
-Lado LeerUnLado() {
-    /*
-        La funcion lee una linea desde stdin que representara un lado
-        y devuelve el elemento de tipo Lado que represente este lado si
-        la linea es valida , o bien LadoNulo si la linea no es valida.
-    */
-    char *buffer = calloc(1, sizeof(33));
-    char *tokenx
-    tokeny, tokenc;
-    lado_t new = calloc(1, sizeof(struct Lado));
-    if(fgets(buffer, 33, stdin) != NULL) {
-        tokenx = strtok(buffer, " ");
-        tokeny = strtok(NULL, " ");
-        tokenc = strtok(NULL, "\n");
-        if(tokenx && tokeny && tokenc && tokenx[0] != '-' && tokeny[0] != '-'&& tokenc[0] != '-') {
-            new->x = crear_vertice((u64)(tokenx));
-            new->y = crear_vertice((u64)(tokeny));
-            new->c = (u64)(tokenc);
-            new->f = 0;
-        }
-        else {
-            free(new);
-            new = NULL;
-        }
-        if(buffer != NULL) {
-            free(buffer);
-        }
-    }
-    return new;
-}
+Lado LeerUnLado()
+
+
+/* 	Añade el lado L al network *D. El flujo en dicho lado se inicializa como
+	f(L) = 0. 
+	Devuelve 1 si se pudo realizar esta operación, y 0 si no se pudo. */
 int CargarUnLado(DovahkiinP D, Lado L);
 
 
