@@ -3,8 +3,6 @@
 /* 	Definición de las structs definidas en API.h, más algunas adicionales 
 	necesarias. */
 
-
-
 typedef struct Nodo_lado* Nodo_ladoP;
 typedef struct Lista_lados* Lista_ladosP;
 typedef struct Vertice* VerticeP;
