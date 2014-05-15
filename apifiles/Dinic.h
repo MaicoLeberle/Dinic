@@ -7,6 +7,7 @@
 	aumentante en el grafo de los niveles de Dinic, y para enviar flujo cuando
 	sea necesario. */
 struct Dinic_nodo;
+typedef struct Dinic_nodo* Dinic_nodoP;
 
 /* 	Las siguientes dos estructuras básicamente implementan el modo de tener en 
  	una sóla lista enlazada todos los lados sX de nuestro grafo de niveles de 
