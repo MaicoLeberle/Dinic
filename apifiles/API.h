@@ -21,6 +21,6 @@ struct DovahkiinSt {
 
 DovahkiinP NuevoDovahkiin();
 int DestruirDovahkiin();
-LadoP LeerUnLado();
+Lado LeerUnLado();
 int CargarUnLado(DovahkiinP D, LadoP L);
 #endif

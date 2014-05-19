@@ -7,6 +7,7 @@ VerticeP crear_vertice(u64 nombre) {
         new->nombre = nombre;
         new->vecinos_forward = list_create();
         new->vecinos_backward = list_create();
+        new->iteracion = 0;
     }
     
     return new;
@@ -15,11 +16,14 @@ VerticeP crear_vertice(u64 nombre) {
 VerticeP destruir_vertice(VerticeP vertice) {
     assert(vertice);
     
+    void *(*puntero_funcion)(void *);
+    puntero_funcion = &destruir_lado;
+
     if(vertice->vecinos_forward) {
-        vertice->vecinos_forward = list_destroy(vertice->vecinos_forward, &destruir_lado);
+        vertice->vecinos_forward = list_destroy(vertice->vecinos_forward, &puntero_funcion);
     }
     if(vertice->vecinos_backward) {
-        vertice->vecinos_backward = list_destroy(vertice->vecinos_backward, &destruir_lado);
+        vertice->vecinos_backward = list_destroy(vertice->vecinos_backward, &puntero_funcion);
     }
     free(vertice);
     

@@ -29,15 +29,3 @@ void *destruir_lado(void *ptr) {
     
     return NULL;
 }
-
-VerticeP tomar_x(LadoP lado) {
-    assert(lado);
-    
-    return lado->x;
-}
-
-VerticeP tomar_y(LadoP lado) {
-    assert(lado);
-    
-    return lado->y;
-}

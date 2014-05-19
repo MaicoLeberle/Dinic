@@ -18,6 +18,48 @@ DovahkiinP NuevoDovahkiin() {
     
 }
 
+int DestruiDovahkiin(DovahkiinP D) {
+    assert(DovahkiinP);
+    
+    void *(*puntero_funcion)(void *);
+    puntero_funcion = &destruir_vertice;
+    
+    if(D->data) {
+        D->data = list_destroy(D->data, puntero_funcion);
+    }
+    if(D->temp) {
+        D->temp = list_destroy(D->temp, puntero_funcion);
+    }
+}
+
+void FijarFuente(DovahkiinP D, u64 x) {
+    assert(D);
+    
+    VerticeP search = NULL;
+    bool (*puntero_funcion)(void *, void *);
+    puntero_funcion = &comparar_vertice;
+    
+    VerticeP temp_x = crear_vertice(x);
+    search = list_search(D->data, (void *)temp_x, puntero_funcion)
+    if(search) {
+        D->fuente = search;
+    }
+}
+
+void FijarResumidero(DovahkiinP D, u64 x) {
+    assert(D);
+    
+    VerticeP search = NULL;
+    bool (*puntero_funcion)(void *, void *);
+    puntero_funcion = &comparar_vertice;
+    
+    VerticeP temp_x = crear_vertice(x);
+    search = list_search(D->data, (void *)temp_x, puntero_funcion)
+    if(search) {
+        D->resumidero = search;
+    }
+}
+
 uint64_t atoi64(char *s) {
     /*
         No se checkea si hay overflow !!!
@@ -32,7 +74,7 @@ uint64_t atoi64(char *s) {
 	return result;
 }
 
-LadoP LeerUnLado() {
+Lado LeerUnLado() {
     /*
         La funcion lee una linea desde stdin que representara un lado
         y devuelve el elemento de tipo Lado que represente este lado si
@@ -63,7 +105,7 @@ LadoP LeerUnLado() {
         }
     }
     fclose(text);//à virer aussi si stdin
-    return new;
+    return &new;
 }
 
 int CargarUnLado(DovahkiinP D, LadoP L) {

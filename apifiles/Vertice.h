@@ -8,11 +8,12 @@ struct Vertice {
 	u64 nombre;
 	list_t vecinos_forward;
 	list_t vecinos_backward;
+	int iteracion;
 };
 
 
 VerticeP crear_vertice(u64 nombre);
-VerticeP destruir_vertice(VerticeP vertice);
+void *destruir_vertice(void *vertice);
 bool comparar_vertice(void *x, void *y);
 
 #endif
