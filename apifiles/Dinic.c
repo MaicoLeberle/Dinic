@@ -1,5 +1,4 @@
 #include "Dinic.h"
-#include "DinicAuxiliar.h"
 /* 	list.h implementa la lista necesaria para establecer Grafo_niveles_Dinic 
 	sobre los niveles establecidos por BFS. */
 #include "list.h"
@@ -7,6 +6,24 @@
 /*	
 	Definiciones de estructuras.
  */
+
+struct Dinic_nodo {
+	/*  iteracionFF_DFS indica el número de iteración en el que se encuentra 
+		este nodo, lo cual indica si se debe enviar flujo cuando se lo pida o 
+		no. Es decir, si la última iteración de FF-DFS fue n, entonces sólo se
+		debería enviar flujo por los lados Dinic_nodo cuyo iteracionFF_DFS sea
+		n. */
+	unsigned int iteracionFF_DFS;
+	/*	Recordar que el siguiente lado debería tener toda la información 
+		necesaria, como su flujo, su capacidad, un indicador de si se trata de 
+		un lado forward o backward, un puntero a sus vértices de partida y de
+		llegada, y un puntero al lado inverso. */
+	Lado lado;
+	lista_lados_vecinosP lados_vecinos;
+	Dinic_nodoP padre_en_iteracion;
+};
+
+typedef struct Dinic_nodo* Dinic_nodoP;
 
 struct Grafo_niveles_Dinic {
 	/*	llega_a_t indica si siguen existiendo caminos que llegan al 
@@ -16,7 +33,7 @@ struct Grafo_niveles_Dinic {
 		algoritmo. */
 	unsigned int iteracionFF_DFS;
 	u64 flujo_a_enviar;
-	Elemento_grafo_niveles_DinicP primer_nodo_de_lista;
+	Dinic_nodoP primer_nodo_de_lista;
 };
 
 
@@ -51,10 +68,10 @@ void ImprimirCorte(Grafo_niveles_DINICP grafo);
 
 /*	Si no se llega al resumidero, es necesario eliminar el Grafo_niveles_Dinic 
 	asociado a grafo y crearle uno nuevo. Esta función debe ser usada 
-	internamente en EstablecerCaminoAumentante. */
-bool SeLlegaResumidero(Grafo_niveles_DINICP grafo);
+	internamente en EstablecerCaminoAumentante. 
+bool SeLlegaResumidero(Grafo_niveles_DINICP grafo); */
 
 
 /*
 	Fin definición de funciones.
-*/	
+*/
