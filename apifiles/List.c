@@ -1,4 +1,4 @@
-#include "list.h"
+#include "List.h"
 
 /*                Next
 list :   (First)---------->(object)----->(Last)----->Null
@@ -101,7 +101,7 @@ void *list_search(list_t list, void *item, bool function_compare(void*, void*)) 
     assert(list != NULL);
     assert(item != NULL);
     
-    void *temp = list->first;
+    member_t temp = list->first;
     bool found = false;
     
     while(!found && temp != NULL) {
