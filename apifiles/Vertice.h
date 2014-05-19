@@ -8,7 +8,8 @@ struct Vertice {
 	u64 nombre;
 	list_t vecinos_forward;
 	list_t vecinos_backward;
-	int iteracion;
+	int distancia;
+	verticeP ancestro;
 };
 
 

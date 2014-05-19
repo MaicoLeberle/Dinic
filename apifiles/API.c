@@ -60,6 +60,32 @@ void FijarResumidero(DovahkiinP D, u64 x) {
     }
 }
 
+int ImprimirFuente(DovahkiinP D) {
+    assert(D);
+    
+    int result = -1;
+    
+    if(D->fuente) {
+        printf("Fuente: %" PRIu64 "\n", D->fuente);
+        result = 0;
+    }
+    
+    return result;
+}
+
+int ImprimirFuente(DovahkiinP D) {
+    assert(D);
+    
+    int result = -1;
+    
+    if(D->resumidero) {
+        printf("Resumidero: %" PRIu64 "\n", D->resumidero);
+        result = 0;
+    }
+    
+    return result;
+}
+
 uint64_t atoi64(char *s) {
     /*
         No se checkea si hay overflow !!!
@@ -129,3 +155,27 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
     y->vecinos_backward = list_add(y->vecinos_backward, L);
     return 1;
 }
+
+int Prepararse(DovahkiinP D) {
+    assert(D);
+    
+    int result = 0;
+    
+    if(D->fuente && D->resumidero) {
+        result = 1;
+    }
+    
+    return result;
+}
+
+int ActualizarDistancias(DovahkiinP D) {
+    assert(D);
+    
+    /*Para ustedes*/   
+}
+
+int BusquedaCaminoAumetante(DovahkiinP D) {
+    /*Para ustedes*/
+}
+
+

@@ -17,6 +17,7 @@ struct DovahkiinSt {
 	VerticeP fuente, resumidero;
 	u64 flujo;
 	list_t data, temp;
+	int iteracion;
 };
 
 DovahkiinP NuevoDovahkiin();
