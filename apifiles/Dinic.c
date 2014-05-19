@@ -1,5 +1,8 @@
 #include "Dinic.h"
 #include "DinicAuxiliar.h"
+/* 	list.h implementa la lista necesaria para establecer Grafo_niveles_Dinic 
+	sobre los niveles establecidos por BFS. */
+#include "list.h"
 
 /*	
 	Definiciones de estructuras.
@@ -7,8 +10,8 @@
 
 struct Grafo_niveles_Dinic {
 	/*	llega_a_t indica si siguen existiendo caminos que llegan al 
-		resumidero. */
-	bool llega_a_t;
+		resumidero. 
+	bool llega_a_t; */
 	/* 	iteracionFF_DFS indica la iteración actual en la que se encuentra el 
 		algoritmo. */
 	unsigned int iteracionFF_DFS;
