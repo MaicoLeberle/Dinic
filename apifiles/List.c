@@ -37,7 +37,6 @@ list_t list_destroy(list_t list, void *function_destroy(void*)) {
     while(current != NULL) {
         temp = temp->next;
         current = member_destroy(current, function_destroy);
-        
         current = temp;
     }
     free(list);
@@ -61,7 +60,9 @@ member_t member_create(void *object) {
 member_t member_destroy(member_t member, void *function_destroy(void*)) {
     assert(member != NULL);
     
-    function_destroy(member->member);
+    if(member->member) {
+        function_destroy(member->member);
+    }
     free(member);
     
     return NULL;
@@ -87,6 +88,25 @@ list_t list_add(list_t list, void *object) {
     return list;
 }
 
+list_t list_direct_add(list_t list, member_t member) {
+    assert(list);
+    assert(member);
+    
+    if(list->first == NULL) {
+        list->first = member;
+        list->last = member;
+    }
+    else {
+        member->previous = list->last;
+        list->last->next = member;
+        list->last = member;
+    }
+    list->length = list->length + 1;
+    
+    return list;
+}
+
+
 void *get_content(member_t member) {
     assert(member != NULL);
     assert(member->member != NULL);
@@ -102,13 +122,19 @@ void *list_search(list_t list, void *item, bool function_compare(void*, void*)) 
     assert(item != NULL);
     
     member_t temp = list->first;
+    void *result = NULL;
     bool found = false;
     
     while(!found && temp != NULL) {
-        found = function_compare(get_content(temp), item);
-        temp = temp->next;
+        found = function_compare(temp->member, item);
+        if(!found) {
+            temp = temp->next;
+        }
     }
-    return temp;
+    if(found) {
+        result = temp->member;
+    }
+    return result;
 }
 
 bool list_empty(list_t list) {
@@ -121,4 +147,16 @@ unsigned long list_size(list_t list) {
     assert(list != NULL);
     
     return list->length;
+}
+
+member_t list_get_first(list_t list) {
+    assert(list);
+    
+    return list->first;
+}
+
+member_t list_next(member_t member) {
+    assert(member);
+    
+    return member->next;
 }

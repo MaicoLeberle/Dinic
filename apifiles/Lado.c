@@ -18,14 +18,8 @@ LadoP crear_lado(VerticeP x, VerticeP y, u64 c) {
 void *destruir_lado(void *ptr) {
     assert(ptr);
     
-    LadoP lado = (LadoP)ptr;
-    if(lado->x) {
-        lado->x = destruir_vertice(lado->x);
-    }
-    if(lado->y) {
-        lado->y = destruir_vertice(lado->y);
-    }
-    free(lado);
+    free(ptr);
+    ptr = NULL;
     
-    return NULL;
+    return ptr;
 }
