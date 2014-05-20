@@ -17,11 +17,8 @@ struct DovahkiinSt {
 	VerticeP fuente, resumidero;
 	u64 flujo;
 	list_t data, temp;
-<<<<<<< HEAD
 	int iteracion;
-=======
 	Grafo_niveles_DinicP Dinic;
->>>>>>> upstream/master
 };
 
 DovahkiinP NuevoDovahkiin();
