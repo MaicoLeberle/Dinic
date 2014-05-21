@@ -30,4 +30,7 @@ Lado LeerUnLado();
 int CargarUnLado(DovahkiinP D, LadoP L);
 int Prepararse(DovahkiinP D);
 int ActualizarDistancias(DovahkiinP D);
+int BusquedaCaminoAumentante(DovahkiinP D);
+u64 AumentarFlujo(DovahkiinP D);
+u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D);
 #endif

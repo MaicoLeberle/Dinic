@@ -19,5 +19,10 @@ unsigned long list_size(list_t list);
 bool list_empty(list_t list);
 void *get_content(member_t member);
 member_t list_get_first(list_t list);
+member_t list_get_last(list_t list);
 member_t list_next(member_t member);
+member_t list_previous(member_t member);
+member_t remove_last(list_t list, void *function_destroy(void*));
+/*	member_t remove_first(member_t member, void *function_destroy(void*)); */
+
 #endif

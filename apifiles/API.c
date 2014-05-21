@@ -195,3 +195,66 @@ int ActualizarDistancias(DovahkiinP D) {
     }
     return result;
 }
+
+/*  La siguiente implementación de BusquedaCaminoAumentante va guardando en D->temp 
+    todas las aristas involucradas en un camino de s a t. */
+int BusquedaCaminoAumentante(DovahkiinP D) {
+    unsigned int nivel = D->fuente->distancia;
+    if(!D->temp) {
+        D->temp = list_create();
+    }
+    member_t vecinos_de_s = (D->fuente)->vecinos_forward;
+    while(vecinos_de_s) {
+        D->temp = list_add(vecinos_de_s);
+        if(BusquedaCaminoAumentanteAux(((list_get_last(D->temp))->member)->y, D->temp, D->resumidero, &(D->flujo))) {
+            return 1;
+        } else {
+            D->temp = remove_last(D->temp);
+        }
+        vecinos_de_s = list_next(vecinos_de_s);
+    }
+    return 0;
+}
+
+/*  La siguiente función auxiliar sirve para implementar DFS desde s respetando
+    los niveles de BFS establecidos al llamar a ActualizarDistancias(). 
+    Devuelve true si se llega a t y false si no se llega. */
+bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, VerticeP resumidero, u64P flujo) {
+    member_t aux = list_get_first(vertice->vecinos_forward);
+    while(aux) {
+        min_flujo = min(flujo, (aux->member)->c - (aux->member)->f);
+        if(((aux->member)->y)->distancia > resumidero->distancia || ((aux->member)->y)->distancia != vertice->distancia + 1 || !min_flujo) {
+            continue;
+        } else {
+            if(comparar_vertice((aux->member->)y, resumidero)) {
+                camino_inicial->add((aux->member)->y);
+                (*flujo) = min_flujo;
+                return true;
+            } else {
+                if(!BusquedaCaminoAumentanteAux((aux->member)->y, camino_inicial->add(aux->member), resumidero, min_flujo)) {
+                    remove_last(camino_inicial, &destruir_vertice);
+                    aux = list_next(aux);
+                } else {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+u64 AumentarFlujo(DovahkiinP D) {
+    member_t llegada = list_get_last(D->temp);
+    member_t salida = list_get_previous(llegada);
+    while(flag)
+}
+
+
+u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
+    //
+}
+
+u64 min(u64 a, u64 b) {
+    return (a <= b ? a : b);
+}

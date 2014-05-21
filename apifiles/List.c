@@ -155,8 +155,31 @@ member_t list_get_first(list_t list) {
     return list->first;
 }
 
+member_t list_get_last(list_t list) {
+    assert(list);
+
+    return list->last;
+}
+
 member_t list_next(member_t member) {
     assert(member);
     
     return member->next;
+}
+
+member_t list_previous(member_t member) {
+    assert(member);
+
+    return member->previous;
+}
+
+member_t remove_last(list_t list, void *function_destroy(void*)) {
+    assert(list);
+
+    if(list->last->member) {
+        function_destroy(list->last->member);
+    }
+    free(list->last);
+
+    return NULL;
 }
