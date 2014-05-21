@@ -226,8 +226,8 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
         if(((aux->member)->y)->distancia > resumidero->distancia || ((aux->member)->y)->distancia != vertice->distancia + 1 || !min_flujo) {
             continue;
         } else {
-            if(comparar_vertice((aux->member->)y, resumidero)) {
-                camino_inicial->add((aux->member)->y);
+            if(comparar_vertice((aux->member)->y, resumidero)) {
+                camino_inicial->add(aux->member);
                 (*flujo) = min_flujo;
                 return true;
             } else {
@@ -245,14 +245,27 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
 
 
 u64 AumentarFlujo(DovahkiinP D) {
-    member_t llegada = list_get_last(D->temp);
-    member_t salida = list_get_previous(llegada);
-    while(flag)
+    member_t lado = list_get_last(D->temp);
+    while(lado) {
+        (lado->member)->f = (lado->member)->flujo + D->flujo;
+        lado = list_next(lado);
+    }
+    /*  Falta chequear si algo salió mal. */
+    return 1;
 }
 
 
 u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
-    //
+    /*  Se empieza desde el último lado guardado porque se pide el camion desde t a s. */
+    member_t lado = list_get_last(D->temp);
+    while(lado) {
+        (lado->member)->f = (lado->member)->flujo + D->flujo;
+        printf("%" PRIu64 ";", (lado->member)->y));
+        lado = list_next(lado);
+    }
+    printf("s:\t%" PRIu64, D->flujo);
+    /*  Falta chequear si algo salió mal. */
+    return 1;
 }
 
 u64 min(u64 a, u64 b) {
