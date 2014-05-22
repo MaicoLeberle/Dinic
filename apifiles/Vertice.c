@@ -39,20 +39,30 @@ bool comparar_vertice(void *x, void *y) {
 list_t add_neighboor_to_list(list_t list, VerticeP v, unsigned int i) {
     assert(list);
     assert(v);
-    
+   
     member_t member = list_get_first(v->vecinos_forward);
     LadoP lado = NULL;
-    
+   
     while(member) {
         lado = get_content(member);
-        if(lado->y->iteracion != i) {
-            //Si no lo visite esta iteracion ...
+        if(lado->y->iteracion != i && lado->c > 0) {
+            //Si no lo visite esta iteracion y hay capacidad
             lado->y->distancia = lado->x->distancia + 1;
             lado->y->iteracion = i;
             list = list_add(list, lado->y);
         }
         member = list_next(member);
     }
-    
+    member = list_get_first(v->vecinos_backward);
+    while(member) {
+        lado = get_content(member);
+        if(lado->y->iteracion != i && lado->f > 0) {
+            //Si no lo visite esta iteracion y hay flujo
+            lado->y->distancia = lado->x->distancia - 1;
+            lado->y->iteracion = i;
+            list = list_add(list, lado->y);
+        }
+        member = list_next(member);
+    }
     return list;
 }

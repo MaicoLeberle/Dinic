@@ -167,32 +167,32 @@ int Prepararse(DovahkiinP D) {
 
 int ActualizarDistancias(DovahkiinP D) {
     assert(D);
-
+ 
     member_t temp = NULL;
+    bool found =false;
     int result = 0;
-    
+   
     D->iteracion += 1;
-    
+   
     if(!D->temp) {
         D->temp = list_create();
     }
-    
+   
     D->temp = list_add(D->temp, D->fuente);//Destruir member_t
     temp = list_get_first(D->temp);
-    
-    while(temp && !comparar_vertice(get_content(temp), D->resumidero)) {
-        D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->iteracion);
+     
+    while(temp && !found) {
+        found = comparar_vertice(get_content(temp), D->resumidero);
+        if(!found) {
+            D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->iteracion);
+        }
         temp = list_next(temp);
     }
-    if(comparar_vertice(get_content(temp), D->resumidero)) {
+    if(found) {
         /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
         result = 1;
         D->temp = list_destroy_keep_members(D->temp);
-    } else {
-        /*  No se encontró ningún camino al resumidero, por lo que no se limpia la lista D->temp
-            (ésta nos servirá para imprimir el corte). */
     }
-
     return result;
 }
 
