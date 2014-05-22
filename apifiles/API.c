@@ -290,7 +290,7 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
             /*  Es un vértice válido para continuar el análisis. Como no existen (¿es así? chequear con el enunciado) lados forward desde
                 el resumidero, entonces no existe la posibilidad de llegar a éste a través de un último lado backward.
                 Luego, sólo se debe proceder a evaluar los lados subsiguientes. */
-            if(!BusquedaCaminoAumentanteAux((aux->member)->x, list_add(camino_inicial, aux->member), resumidero, min_flujo, iteracion) {
+            if(!BusquedaCaminoAumentanteAux((aux->member)->x, list_add(camino_inicial, aux->member), resumidero, min_flujo, iteracion)) {
                 /*  No se llega al resumidero a través de x. Se debe eliminar el último lado agregado a la lista del camino 
                     al llamar a list_add(camino_inicial, aux->member). */
                 /*  ¿Se debe hacer un destruir_vertice()? ¿Esto no elimina el lado guardado en D->data? */
@@ -320,10 +320,12 @@ u64 AumentarFlujo(DovahkiinP D) {
         /*  Verifico que efectivamente se ha encontrado un flujo distinto de 0 para enviar. */
         assert(D->flujo);
 
-        member_t lado = list_get_last(D->FF_DFS);
-        while(lado) {
-            (lado->member)->f = (lado->member)->flujo + D->flujo;
-            lado = list_next(lado);
+        member_t temp = list_get_last(D->FF_DFS);
+        Lado lado;
+        while(temp) {
+            lado = (Lado)get_content(temp);
+            lado->f = lado->f + D->flujo;
+            temp = list_next(temp);
         }
         /*  Se debe resetear el flujo a enviar y limpiar la lista D->FF_DFS. */
         D->flujo = 0;
@@ -346,11 +348,13 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
         /*  Verifico que efectivamente se ha encontrado un flujo distinto de 0 para enviar. */
         assert(D->flujo);
 
-        member_t lado = list_get_last(D->FF_DFS);
-        while(lado) {
-            (lado->member)->f = (lado->member)->flujo + D->flujo;
-            printf("%" PRIu64 ";", (lado->member)->y));
-            lado = list_next(lado);
+        member_t temp = list_get_last(D->FF_DFS);
+        Lado lado;
+        while(temp) {
+            lado = (Lado)get_content(temp);
+            lado->f = lado->f + D->flujo ;
+            printf("%" PRIu64 ";", lado->y);
+            temp = list_next(temp);
         }
         printf("s:\t%" PRIu64, D->flujo);
         /*  Se debe resetear el flujo a enviar. */
@@ -369,7 +373,7 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     y correcto para lograr el acometido de ImprimirFlujo, pues cada lado ingresado está en 
     vecinos_forward de algún vértice y no se repite en ninguna otra lista vecinos_forward (evidentemente,
     sí se repiten en alguna lista vecinos_backward de algún vértice). */
-void ImprimirFlujo(DovahkiinP D); {
+void ImprimirFlujo(DovahkiinP D){
     member_t temp_vertice;
     member_t temp_lado;
     Lado lado;
@@ -386,13 +390,26 @@ void ImprimirFlujo(DovahkiinP D); {
         temp_lado = list_get_first((temp->member)->vecinos_forward);
         while(temp_lado) {
             lado = (Lado)(get_content(temp->lado));
-            printf("Lado %"PRIu64", %"PRIu64":\t%"PRIu64"\n", lado->x, lado->y, lado->f);
-            temp_lado = list_get_next(temp_lado);
+            printf("Lado %"PRIu64", %"PRIu64":\t%"PRIu64"\n", (lado->x)->nombre, (lado->y)->nombre, lado->f);
+            temp_lado = list_next(temp_lado);
         }
-        temp_vertice = list_get_next(temp_vertice);
+        temp_vertice = list_next(temp_vertice);
     }
 }
 
+u64 ValorFlujo(DovahkiinP D) {
+    member_t aux;
+    Lado lado;
+    u64 f = 0;
+
+    aux = list_get_first((D->fuente)->vecinos_forward);
+    while(aux){
+        lado = (Lado) get_content(aux);
+        f += lado->f;
+        aux = list_next(aux);
+    }
+    return f;
+}
 /*   */
 void ImprimirValorFlujo(DovahkiinP D) {
     u64 f = ValorFlujo(D);
@@ -403,19 +420,6 @@ void ImprimirValorFlujo(DovahkiinP D) {
     }
 }
 
-u64 ValorFlujo(DovahkiinP D) {
-    member_t aux;
-    Lado lado;
-    u64 f = 0
-
-    aux = list_get_first((D->fuente)->vecinos_forward);
-    while(aux){
-        lado = (Lado) get_content(aux);
-        f += lado->f;
-        aux = aux->next;
-    }
-    return f;
-}
 
 /*  Precondición: Se corrió ActualizarDistancia y no se llegó al resumidero. El corte minimal
     está en D->temp. */
@@ -423,9 +427,9 @@ void ImprimirCorte(DovahkiinP D) {
     member_t temp = list_get_first(D->temp);
     printf("Corte Minimal:\tS = {s");
     while(temp) {
-        printf(",%"PRIu64, (VerticeP)(get_content(temp))->nombre);
+        printf(",%"PRIu64, ((VerticeP)(get_content(temp)))->nombre);
     }
-    print("\nCapacidad:\t"%PRIu64, ValorFlujo(D));
+    printf("\nCapacidad:\t%" PRIu64, ValorFlujo(D));
 }
 
 u64 min(u64 a, u64 b) {
