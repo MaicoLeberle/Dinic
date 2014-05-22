@@ -181,10 +181,12 @@ int ActualizarDistancias(DovahkiinP D) {
     D->temp = list_add(D->temp, D->fuente);//Destruir member_t
     temp = list_get_first(D->temp);
      
-    while(temp && !found) {
+    while(temp) {
+        D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->iteracion);
         found = comparar_vertice(get_content(temp), D->resumidero);
-        if(!found) {
-            D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->iteracion);
+        if(found) {
+            found = true;
+            break;
         }
         temp = list_next(temp);
     }
