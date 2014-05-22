@@ -376,6 +376,21 @@ void ImprimirFlujo(DovahkiinP D); {
 /*   */
 void ImprimirValorFlujo(DovahkiinP D) {
     // Terminar
+    member_t aux;
+    Lado lado;
+    u64 f = 0
+
+    aux = list_get_first((D->fuente)->vecinos_forward);
+    while(aux){
+        lado = (Lado) get_content(aux);
+        f += lado->f;
+        aux = aux->next;
+    }
+    if (D->temp){
+        printf("Valor del flujo Maximal: \t%" PRIu64, f);
+    }else{
+        printf("Valor del flujo (no maximal):\t%" PRIu64, f);
+    }
 }
 
 /*  Se corrió ActualizarDistancia y no se llegó al resumidero. */
