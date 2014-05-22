@@ -167,7 +167,6 @@ int ActualizarDistancias(DovahkiinP D) {
     assert(D);
 
     member_t temp = NULL;
-    member_t next = NULL;
     int result = 0;
     
     D->iteracion += 1;
@@ -200,7 +199,7 @@ int ActualizarDistancias(DovahkiinP D) {
 int BusquedaCaminoAumentante(DovahkiinP D) {
     /*  Si ya existía una lista D->FF_DFS, entonces no se llamó a alguna función AumentarFlujo.
         ¿Está bien proseguir? CHEQUEAR ESTO! */
-    if(D->FF_DFS) {
+    if(!(list_empty(D->FF_DFS))) {
         D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
     }
     D->FF_DFS = list_create();
@@ -312,7 +311,7 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
 
 
 u64 AumentarFlujo(DovahkiinP D) {
-    if(D->FF_DFS) {
+    if(!(list_empty(D->FF_DFS))) {
         /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
             Se procede a actualizar el flujo en los lados involucrados.
             Se empieza desde el último lado guardado porque se pide el imprimir desde t a s. */
@@ -338,7 +337,7 @@ u64 AumentarFlujo(DovahkiinP D) {
 
 
 u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
-    if(D->FF_DFS) {
+    if(!(list_empty(D->FF_DFS))) {
         /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
             Se procede a actualizar el flujo en los lados involucrados.
             Se empieza desde el último lado guardado porque se pide el imprimir desde t a s. */
@@ -373,7 +372,7 @@ void ImprimirFlujo(DovahkiinP D); {
     member_t temp_vertice;
     member_t temp_lado;
     Lado lado;
-    if (D->temp) {
+    if (!(list_empty(D->temp))) {
         /*  Al llamar ActualizarDistancias no se limpió la lista D->temp porque no se llegó al resumidero. 
             Luego, el flujo es maximal y el corte es minimal. */
         printf("Flujo Maximal:\n");
@@ -396,7 +395,7 @@ void ImprimirFlujo(DovahkiinP D); {
 /*   */
 void ImprimirValorFlujo(DovahkiinP D) {
     u64 f = ValorFlujo(D);
-    if (D->temp){
+    if (!(list_empty(D->temp)){
         printf("Valor del flujo Maximal: \t%" PRIu64, f);
     }else{
         printf("Valor del flujo (no maximal):\t%" PRIu64, f);
