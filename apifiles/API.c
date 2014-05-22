@@ -184,7 +184,7 @@ int ActualizarDistancias(DovahkiinP D) {
         temp = list_next(temp);
     }
     if(comparar_vertice(get_content(temp), D->resumidero)) {
-        /*  Se encontró un camino al resumidero. */
+        /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
         result = 1;
         D->temp = list_destroy_keep_members(D->temp);
     } else {
@@ -370,7 +370,27 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     vecinos_forward de algún vértice y no se repite en ninguna otra lista vecinos_forward (evidentemente,
     sí se repiten en alguna lista vecinos_backward de algún vértice). */
 void ImprimirFlujo(DovahkiinP D); {
-    // Terminar
+    member_t temp_vertice;
+    member_t temp_lado;
+    Lado lado;
+    if (D->temp) {
+        /*  Al llamar ActualizarDistancias no se limpió la lista D->temp porque no se llegó al resumidero. 
+            Luego, el flujo es maximal y el corte es minimal. */
+        printf("Flujo Maximal:\n");
+    } else {
+        printf("Flujo (no maximal):\n");
+    }
+
+    temp_vertice = list_get_first(D->data);
+    while(temp_vertice) {
+        temp_lado = list_get_first((temp->member)->vecinos_forward);
+        while(temp_lado) {
+            lado = (Lado)(get_content(temp->lado));
+            printf("Lado %"PRIu64", %"PRIu64":\t%"PRIu64"\n", lado->x, lado->y, lado->f);
+            temp_lado = list_get_next(temp_lado);
+        }
+        temp_vertice = list_get_next(temp_vertice);
+    }
 }
 
 /*   */
