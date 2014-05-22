@@ -36,5 +36,5 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D);
 void ImprimirFlujo(DovahkiinP D);
 void ImprimirValorFlujo(DovahkiinP D);
 void ImprimirCorte(DovahkiinP D);
-u64 min(u64 a, u64 b);
+
 #endif
