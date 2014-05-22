@@ -365,6 +365,23 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     }
 }
 
+/*  La estrategia a seguir en la siguiente función es sencilla: se recorre cada uno de los vértices
+    y se imprimen los lados que comiencen en él (i.e., los lados en vecinos_forward). Esto es suficiente
+    y correcto para lograr el acometido de ImprimirFlujo, pues cada lado ingresado está en 
+    vecinos_forward de algún vértice y no se repite en ninguna otra lista vecinos_forward (evidentemente,
+    sí se repiten en alguna lista vecinos_backward de algún vértice). */
+void ImprimirFlujo(DovahkiinP D); {
+    // Terminar
+}
+
+void ImprimirValorFlujo(DovahkiinP D) {
+    // Terminar
+}
+
+void ImprimirCorte(DovahkiinP D) {
+    // Terminar
+}
+
 u64 min(u64 a, u64 b) {
     return (a <= b ? a : b);
 }

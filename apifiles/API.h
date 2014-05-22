@@ -33,4 +33,8 @@ int ActualizarDistancias(DovahkiinP D);
 int BusquedaCaminoAumentante(DovahkiinP D);
 u64 AumentarFlujo(DovahkiinP D);
 u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D);
+void ImprimirFlujo(DovahkiinP D);
+void ImprimirValorFlujo(DovahkiinP D);
+void ImprimirCorte(DovahkiinP D);
+
 #endif
