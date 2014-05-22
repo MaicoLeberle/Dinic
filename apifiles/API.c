@@ -317,7 +317,7 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
         } else {
             /*  Si no se llega al resumidero desde (vecinos_de_s->member)->y, entonces se debe eliminar el último
                 lado agregado a la lista que está marcando el camino de la fuente al resumidero. */
-            D->FF_DFS = remove_last_keep_content(D->FF_DFS);
+            remove_last_keep_content(D->FF_DFS);
         }
         /*  Se debe analizar a continuación el siguiente vecino forward de la fuente. */
         vecinos_de_s = list_next(vecinos_de_s);
@@ -368,7 +368,7 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
         while(temp) {
             lado = (Lado)get_content(temp);
             lado->f = lado->f + D->flujo ;
-            printf("%" PRIu64 ";", lado->y);
+            printf("%" PRIu64 ";", (lado->y)->nombre);
             temp = list_next(temp);
         }
         printf("s:\t%" PRIu64, D->flujo);
@@ -402,9 +402,9 @@ void ImprimirFlujo(DovahkiinP D){
 
     temp_vertice = list_get_first(D->data);
     while(temp_vertice) {
-        temp_lado = list_get_first((temp->member)->vecinos_forward);
+        temp_lado = list_get_first(((VerticeP)(get_content(temp_vertice)))->vecinos_forward);
         while(temp_lado) {
-            lado = (Lado)(get_content(temp->lado));
+            lado = (Lado)(get_content(temp_lado));
             printf("Lado %"PRIu64", %"PRIu64":\t%"PRIu64"\n", (lado->x)->nombre, (lado->y)->nombre, lado->f);
             temp_lado = list_next(temp_lado);
         }
@@ -413,15 +413,6 @@ void ImprimirFlujo(DovahkiinP D){
     }
 }
 
-/*   */
-void ImprimirValorFlujo(DovahkiinP D) {
-    u64 f = ValorFlujo(D);
-    if (!(list_empty(D->temp)){
-        printf("Valor del flujo Maximal: \t%" PRIu64, f);
-    }else{
-        printf("Valor del flujo (no maximal):\t%" PRIu64, f);
-    }
-}
 
 u64 ValorFlujo(DovahkiinP D) {
     member_t aux;
