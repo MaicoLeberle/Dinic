@@ -43,6 +43,21 @@ list_t list_destroy(list_t list, void *function_destroy(void*)) {
     return NULL;
 }
 
+list_t list_destroy_keep_members(list_t list) {
+    assert(list);
+
+    member_t current = list->first;
+    member_t temp = current;
+
+    while(current) {
+        temp = temp->next;
+        current = member_destroy_keep_content(current);
+        current = temp;
+    }
+    free(list);
+    return NULL;
+}
+
 member_t member_create(void *object) {
     assert(object != NULL);
     
@@ -65,6 +80,13 @@ member_t member_destroy(member_t member, void *function_destroy(void*)) {
     }
     free(member);
     
+    return NULL;
+}
+
+member_t member_destroy_keep_content(member_t member) {
+    assert(member);
+
+    free(member);
     return NULL;
 }
 
@@ -176,10 +198,22 @@ member_t list_previous(member_t member) {
 member_t remove_last(list_t list, void *function_destroy(void*)) {
     assert(list);
 
-    if(list->last->member) {
-        function_destroy(list->last->member);
+    if((list->last)->member) {
+        function_destroy((list->last)->member);
     }
     free(list->last);
+    list->last = NULL;
+
+    return NULL;
+}
+
+member_t remove_last_keep_content(list_t list) {
+    assert(list);
+
+    if(list->last) {
+        free(list->last);
+        list->last = NULL;
+    }
 
     return NULL;
 }

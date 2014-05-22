@@ -10,8 +10,10 @@ typedef struct _member_t *member_t;
 
 list_t list_create(void);
 list_t list_destroy(list_t list, void *(*function_destroy)(void*));
+list_t list_destroy_keep_members(list_t list);
 member_t member_create(void *node);
 member_t member_destroy(member_t member, void *function_destroy(void*));
+member_t member_destroy_keep_content(member_t member);
 list_t list_add(list_t list, void *member);
 list_t list_direct_add(list_t list, member_t member);
 void *list_search(list_t list, void *item, bool function_compare(void*, void*));
@@ -23,6 +25,7 @@ member_t list_get_last(list_t list);
 member_t list_next(member_t member);
 member_t list_previous(member_t member);
 member_t remove_last(list_t list, void *function_destroy(void*));
+member_t remove_last_keep_content(list_t list);
 /*	member_t remove_first(member_t member, void *function_destroy(void*)); */
 
 #endif

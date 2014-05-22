@@ -196,29 +196,30 @@ int ActualizarDistancias(DovahkiinP D) {
     return result;
 }
 
-/*  La siguiente implementación de BusquedaCaminoAumentante va guardando en D->temp 
+/*  La siguiente implementación de BusquedaCaminoAumentante va guardando en D->FF_DFS 
     todas las aristas involucradas en un camino de s a t. */
 int BusquedaCaminoAumentante(DovahkiinP D) {
-    /*  Siendo que D->temp se utiliza también en ActualizarDistancias, se debe limpiar para utilizarla aquí. */
-    if(D->temp) {
-        D->temp = list_destroy(D->temp, &destruir_vertice);
+    /*  Si ya existía una lista D->FF_DFS, entonces no se llamó a alguna función AumentarFlujo.
+        ¿Está bien proseguir? CHEQUEAR ESTO! */
+    if(D->FF_DFS) {
+        D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
     }
-    D->temp = list_create();
+    D->FF_DFS = list_create();
     /*  Se debe iterar sobre todos los vecinos de la fuente para ver si se puede llegar al resumidero. */
     member_t vecinos_de_s = list_get_first((D->fuente)->vecinos_forward);
     while(vecinos_de_s) {
-        /*  Se agrega el lado forward a D->temp y se procede a ver si a partir de aquí se puede llegar al resumidero. */
-        D->temp = list_add(vecinos_de_s->member);
+        /*  Se agrega el lado forward a D->FF_DFS y se procede a ver si a partir de aquí se puede llegar al resumidero. */
+        D->FF_DFS = list_add(vecinos_de_s->member);
         /*  El flujo desde el cual se debe comenzar el análisis es el flujo restante a enviar a través de este lado
             desde la fuente al vértice (vecinos_de_s->member)->y. */
         D->flujo = (vecinos_de_s->member)->c - (vecinos_de_s->member)->f;
         /*  Se debe pasar como parámetro la iteración actual que estableció nivel(x) de cada vértice visitado. */
-        if(BusquedaCaminoAumentanteAux(((list_get_last(D->temp))->member)->y, D->temp, D->resumidero, &(D->flujo), D->iteracion) {
+        if(BusquedaCaminoAumentanteAux((vecinos_de_s->member)->y, D->FF_DFS, D->resumidero, &(D->flujo), D->iteracion) {
             return 1;
         } else {
             /*  Si no se llega al resumidero desde (vecinos_de_s->member)->y, entonces se debe eliminar el último
                 lado agregado a la lista que está marcando el camino de la fuente al resumidero. */
-            D->temp = remove_last(D->temp);
+            D->FF_DFS = remove_last(D->FF_DFS);
         }
         /*  Se debe analizar a continuación el siguiente vecino forward de la fuente. */
         vecinos_de_s = list_next(vecinos_de_s);
@@ -260,28 +261,29 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
                     /*  No se llega al resumidero a través de y. Se debe eliminar el último lado agregado a la lista del camino 
                         al llamar a list_add(camino_inicial, aux->member). */
                     /*  ¿Se debe hacer un destruir_vertice()? ¿Esto no elimina el lado guardado en D->data? */
-                    remove_last(camino_inicial, &destruir_vertice);
+                    remove_last_keep_content(camino_inicial);
                     /*  Pasar a considerar el siguiente vecino forward de vertice. */
                     aux = list_next(aux);
                 } else {
-                    /*  ¡Se llegó al resumidero! Observar que las llamadas recursivas van alterando D->temp, por lo que ésta ya
+                    /*  ¡Se llegó al resumidero! Observar que las llamadas recursivas van alterando D->FF_DFS, por lo que ésta ya
                         contiene el camino de la fuente al resumidero. */
                     return true;
                 }
             }
         }
     }
-    /*  Después, se consideran los vecinos backward. */
+    /*  Después, se consideran los vecinos backward. Observar como el vértice analizado en los lados forward es y, mientras que en los 
+        lados backward es necesario analizar el vértice x. */
     aux = list_get_first(vertice->vecinos_backward);
     while(aux) {
         /*  Se calcula el flujo que se debería enviar si se elige el lado aux->member. */
         min_flujo = min(flujo, (aux->member)->f);
-        if(((aux->member)->y)->iteracion != iteracion || ((aux->member)->y)->distancia > resumidero->distancia || ((aux->member)->y)->distancia != vertice->distancia + 1 || !min_flujo) {
-            /*  Si la iteracion que estableció la distancia desde la fuente al vértice y (del lado xy, representado en aux->member) no es
-                la última iteración, entonces la distancia de y es considerada como inválida.
-                Si la distancia del vértice y es mayor que la distancia del resumidero, entonces no hay forma de continuar buscando 
+        if(((aux->member)->x)->iteracion != iteracion || ((aux->member)->x)->distancia > resumidero->distancia || ((aux->member)->x)->distancia != vertice->distancia + 1 || !min_flujo) {
+            /*  Si la iteracion que estableció la distancia desde la fuente al vértice x (del lado xy, representado en aux->member) no es
+                la última iteración, entonces la distancia de x es considerada como inválida.
+                Si la distancia del vértice x es mayor que la distancia del resumidero, entonces no hay forma de continuar buscando 
                 caminos al resumidero respetando los niveles de BFS.
-                Por otro lado, si la nivel(y) != nivel(x) + 1, entonces este no es un vértice válido y se debe descartar su 
+                Por otro lado, si la nivel(x) != nivel(y) + 1, entonces este no es un vértice válido y se debe descartar su 
                 subsiguiente análisis. 
                 Por último, si el flujo a mandar es 0, entonces el flujo en el lado es 0, y no se puede devolver flujo. */
             continue;
@@ -289,15 +291,15 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
             /*  Es un vértice válido para continuar el análisis. Como no existen (¿es así? chequear con el enunciado) lados forward desde
                 el resumidero, entonces no existe la posibilidad de llegar a éste a través de un último lado backward.
                 Luego, sólo se debe proceder a evaluar los lados subsiguientes. */
-            if(!BusquedaCaminoAumentanteAux((aux->member)->y, list_add(camino_inicial, aux->member), resumidero, min_flujo, iteracion) {
-                /*  No se llega al resumidero a través de y. Se debe eliminar el último lado agregado a la lista del camino 
+            if(!BusquedaCaminoAumentanteAux((aux->member)->x, list_add(camino_inicial, aux->member), resumidero, min_flujo, iteracion) {
+                /*  No se llega al resumidero a través de x. Se debe eliminar el último lado agregado a la lista del camino 
                     al llamar a list_add(camino_inicial, aux->member). */
                 /*  ¿Se debe hacer un destruir_vertice()? ¿Esto no elimina el lado guardado en D->data? */
-                remove_last(camino_inicial, &destruir_vertice);
+                remove_last_keep_content(camino_inicial);
                 /*  Pasar a considerar el siguiente vecino forward de vertice. */
                 aux = list_next(aux);
             } else {
-                /*  ¡Se llegó al resumidero! Observar que las llamadas recursivas van alterando D->temp, por lo que ésta ya
+                /*  ¡Se llegó al resumidero! Observar que las llamadas recursivas van alterando D->FF_DFS, por lo que ésta ya
                     contiene el camino de la fuente al resumidero. */
                 return true;
             }
@@ -311,32 +313,41 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
 
 
 u64 AumentarFlujo(DovahkiinP D) {
-    if(D->temp || !D->flujo) {
-        /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->temp.
-            Se procede a actualizar el flujo en los lados involucrados. */
-        member_t lado = list_get_last(D->temp);
+    if(D->FF_DFS) {
+        /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
+            Se procede a actualizar el flujo en los lados involucrados.
+            Se empieza desde el último lado guardado porque se pide el imprimir desde t a s. */
+
+        /*  Verifico que efectivamente se ha encontrado un flujo distinto de 0 para enviar. */
+        assert(D->flujo);
+
+        member_t lado = list_get_last(D->FF_DFS);
         while(lado) {
             (lado->member)->f = (lado->member)->flujo + D->flujo;
             lado = list_next(lado);
         }
-        /*  Se debe resetear el flujo a enviar. */
+        /*  Se debe resetear el flujo a enviar y limpiar la lista D->FF_DFS. */
         D->flujo = 0;
+        D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
         return 1;
     } else {
         /*  No se ha hecho una llamada a BusquedaCaminoAumentante que haya establecido un camino de la fuente
-            al resumidero en D->temp, o el flujo enviado es 0. Esto último sirve más que nada para hacer 
-            debugging, pues supuestamente siempre que D->temp != NULL, entonces D->flujo != 0. */
+            al resumidero en D->FF_DFS. */
         return 0;
     }
 }
 
 
 u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
-    if(D->temp || !D->flujo) {
-        /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->temp.
+    if(D->FF_DFS) {
+        /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
             Se procede a actualizar el flujo en los lados involucrados.
-            Se empieza desde el último lado guardado porque se pide el camion desde t a s. */
-        member_t lado = list_get_last(D->temp);
+            Se empieza desde el último lado guardado porque se pide el imprimir desde t a s. */
+
+        /*  Verifico que efectivamente se ha encontrado un flujo distinto de 0 para enviar. */
+        assert(D->flujo);
+
+        member_t lado = list_get_last(D->FF_DFS);
         while(lado) {
             (lado->member)->f = (lado->member)->flujo + D->flujo;
             printf("%" PRIu64 ";", (lado->member)->y));
@@ -345,11 +356,11 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
         printf("s:\t%" PRIu64, D->flujo);
         /*  Se debe resetear el flujo a enviar. */
         D->flujo = 0;
+        D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
         return 1;
     } else {
         /*  No se ha hecho una llamada a BusquedaCaminoAumentante que haya establecido un camino de la fuente
-            al resumidero en D->temp, o el flujo enviado es 0. Esto último sirve más que nada para hacer 
-            debugging, pues supuestamente siempre que D->temp != NULL, entonces D->flujo != 0. */
+            al resumidero en D->FF_DFS. */
         return 0;
     }
 }

@@ -16,7 +16,7 @@
 struct DovahkiinSt {
 	VerticeP fuente, resumidero;
 	u64 flujo;
-	list_t data, temp;
+	list_t data, temp, FF_DFS;
 	unsigned int iteracion;
 };
 
