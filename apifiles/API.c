@@ -184,15 +184,14 @@ int ActualizarDistancias(DovahkiinP D) {
         temp = list_next(temp);
     }
     if(comparar_vertice(get_content(temp), D->resumidero)) {
+        /*  Se encontró un camino al resumidero. */
         result = 1;
+        D->temp = list_destroy_keep_members(D->temp);
+    } else {
+        /*  No se encontró ningún camino al resumidero, por lo que no se limpia la lista D->temp
+            (ésta nos servirá para imprimir el corte). */
     }
-    
-    temp = list_get_first(D->temp);
-    while(temp) {
-        next = list_next(temp);
-        free(temp);
-        temp = next;
-    }
+
     return result;
 }
 
@@ -219,7 +218,7 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
         } else {
             /*  Si no se llega al resumidero desde (vecinos_de_s->member)->y, entonces se debe eliminar el último
                 lado agregado a la lista que está marcando el camino de la fuente al resumidero. */
-            D->FF_DFS = remove_last(D->FF_DFS);
+            D->FF_DFS = remove_last_keep_content(D->FF_DFS);
         }
         /*  Se debe analizar a continuación el siguiente vecino forward de la fuente. */
         vecinos_de_s = list_next(vecinos_de_s);
@@ -374,10 +373,12 @@ void ImprimirFlujo(DovahkiinP D); {
     // Terminar
 }
 
+/*   */
 void ImprimirValorFlujo(DovahkiinP D) {
     // Terminar
 }
 
+/*  Se corrió ActualizarDistancia y no se llegó al resumidero. */
 void ImprimirCorte(DovahkiinP D) {
     // Terminar
 }

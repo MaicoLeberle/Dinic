@@ -47,7 +47,7 @@ list_t list_destroy_keep_members(list_t list) {
     assert(list);
 
     member_t current = list->first;
-    member_t temp = current;
+    member_t temp;
 
     while(current) {
         temp = temp->next;
