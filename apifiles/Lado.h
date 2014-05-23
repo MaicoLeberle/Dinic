@@ -11,4 +11,5 @@ struct Lado {
 
 LadoP crear_lado(VerticeP x, VerticeP y, u64 c);
 void *destruir_lado(void *ptr);
+bool comparar_lados(void *a, void *b);
 #endif

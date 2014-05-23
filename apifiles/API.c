@@ -172,14 +172,20 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
         L->y = y;
     }
     member_t new = member_create(L);
-    if(!list_search(L->x->vecinos_forward, L, &comparar_lados)) {
-        L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
-    }
-    if(!list_search(L->y->vecinos_backward, L, &comparar_lados)) {
-        L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
+    Lado aux = crear_lado(L->y, L->x, L->c);
+    if(!comparar_vertice(L->x, L->y)) {
+        if(!list_search(L->x->vecinos_forward, L, &comparar_lados) && !list_search(L->x->vecinos_backward, aux, &comparar_lados)) {
+            L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
+        }
+        if(!list_search(L->y->vecinos_backward, L, &comparar_lados) && !list_search(L->y->vecinos_forward, aux, &comparar_lados)) {
+            L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
+        }
+        aux = destruir_lado(aux);
+        return 1;
+    } else {
+        return 0;
     }
     
-    return 1;
 }
 
 int Prepararse(DovahkiinP D) {

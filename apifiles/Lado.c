@@ -23,3 +23,13 @@ void *destruir_lado(void *ptr) {
     
     return ptr;
 }
+
+bool comparar_lados(void *a, void *b) {
+    Lado xy = (Lado) a;
+    Lado uv = (Lado) b;
+    if(xy == LadoNulo)
+        return (uv == LadoNulo);
+    if(uv == LadoNulo)
+        return (xy == LadoNulo);
+    return (xy->x == uv->x && xy->y == uv->y);
+}
