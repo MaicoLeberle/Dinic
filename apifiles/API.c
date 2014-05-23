@@ -31,7 +31,7 @@ int DestruirDovahkiin(DovahkiinP D) {
         free(D->temp);
     }
     free(D);
-    
+    D = NULL;
     return 1;
 }
 
