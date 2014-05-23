@@ -45,17 +45,26 @@ void FijarFuente(DovahkiinP D, u64 x) {
     VerticeP check = list_search(D->data, v, &comparar_vertice);
     v = destruir_vertice(v);
     
-    D->fuente = check;
+    if(check){
+        D->fuente = check;
+    }else{
+        D->fuente = v;
+    }
+
 }
 
 void FijarResumidero(DovahkiinP D, u64 x) {
     assert(D);
-    
+    /* Analizar precondiciones */
+    /* Con una Main traicionera podrian fijarse muchas fuentes. deberia fijar 1 sola fuente y no mas */
     VerticeP v = crear_vertice(x);
     VerticeP check = list_search(D->data, v, &comparar_vertice);
     v = destruir_vertice(v);
-    
-    D->resumidero = check;
+    if(check){
+        D->resumidero = check;
+    }else{
+        D->resumidero = v;
+    }
 }
 
 int ImprimirFuente(DovahkiinP D) {
