@@ -95,6 +95,18 @@ static uint64_t atoi64(char *s) {
 	
 	return result;
 }
+bool is_valid(char *s){
+    bool b2 = true;
+    if(s)
+    {  
+        char c = *s++;
+        while (c != '\0'){
+            b2 = b2 && isdigit(c);
+            c = *s++;
+        }
+    }
+    return b2;
+}
 
 Lado LeerUnLado() {
     /*
@@ -112,14 +124,14 @@ Lado LeerUnLado() {
         tokenx = strtok(buffer, " ");
         tokeny = strtok(NULL, " ");
         tokenc = strtok(NULL, "\n");
-        if(tokenx && tokeny && tokenc && tokenx[0] != '-' && tokeny[0] != '-'&& tokenc[0] != '-') {
+        if(is_valid(tokenx) && is_valid(tokeny) && is_valid(tokenc)){
             x = crear_vertice(atoi64(tokenx));
             y = crear_vertice(atoi64(tokeny));
             new = crear_lado(x, y, atoi64(tokenc));
         }
         else {
             free(new);
-            new = NULL;
+            new = LadoNulo;
         }
     }
     free(buffer);
