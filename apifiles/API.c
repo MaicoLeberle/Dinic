@@ -172,8 +172,12 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
         L->y = y;
     }
     member_t new = member_create(L);
-    L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
-    L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
+    if(!list_search(L->x->vecinos_forward, L, &comparar_lados)) {
+        L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
+    }
+    if(!list_search(L->y->vecinos_backward, L, &comparar_lados)) {
+        L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
+    }
     
     return 1;
 }
