@@ -28,7 +28,10 @@ int DestruirDovahkiin(DovahkiinP D) {
         D->data = list_destroy(D->data, &destruir_vertice);
     }
     if(D->temp) {
-        free(D->temp);
+        D->temp = list_destroy_keep_members(D->temp); 
+    }
+    if(D->FF_DFS) {         
+        D->FF_DFS = list_destroy_keep_members(D->FF_DFS);       
     }
     free(D);
     D = NULL;
@@ -145,14 +148,14 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
     
     VerticeP x = (VerticeP)list_search(D->data, L->x, &comparar_vertice);
     VerticeP y = (VerticeP)list_search(D->data, L->y, &comparar_vertice);
-    if(x == NULL) {
+    if(!x) {
         D->data = list_add(D->data, L->x);
     }
     else {
         L->x = destruir_vertice(L->x);
         L->x = x;
     }
-    if(list_search(D->data, L->y, &comparar_vertice) == NULL) {
+    if(!y) {
         D->data = list_add(D->data, L->y);
     }
     else {
