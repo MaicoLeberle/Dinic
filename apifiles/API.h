@@ -13,6 +13,13 @@
 #include "Typedef.h"
 #include "Vertice.h"
 
+/*	Integrantes:
+				Granier, Pierre-Yves	->	flammeus8@gmail.com
+				Schmidt, Mariano		->	nanoschmidt22@gmail.com
+				Drazile, Eduardo		->	edudraz@gmail.com
+				Leberle, Maico C.		->	maico.leberle@gmail.com
+*/
+
 struct DovahkiinSt {
 	VerticeP fuente, resumidero;
 	u64 flujo;

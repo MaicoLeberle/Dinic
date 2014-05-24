@@ -15,6 +15,7 @@ DovahkiinP NuevoDovahkiin() {
         new->flujo = 0;
         new->data = list_create();
         new->temp = list_create();
+        new->FF_DFS = NULL;
         new->iteracion = 0;
     }
     
@@ -28,9 +29,13 @@ int DestruirDovahkiin(DovahkiinP D) {
         D->data = list_destroy(D->data, &destruir_vertice);
     }
     if(D->temp) {
+        /*  Sólo es necesario destruir la lista, pues los vértices ya se han eliminado
+            al destruir D->data. */
         D->temp = list_destroy_keep_members(D->temp); 
     }
-    if(D->FF_DFS) {         
+    if(D->FF_DFS) { 
+        /*  Sólo es necesario destruir la lista, pues los lados ya se han eliminado al
+            destruir D->data. */        
         D->FF_DFS = list_destroy_keep_members(D->FF_DFS);       
     }
     free(D);
@@ -39,25 +44,21 @@ int DestruirDovahkiin(DovahkiinP D) {
 }
 
 void FijarFuente(DovahkiinP D, u64 x) {
-    /*
-        Se busca x en D->data (por eso necesitamos crear un vertice
-        v para buscarlo en D->data.
-        Si v no esta en D->data entonces check = NULL , por lo cual esta 
-        bien poner directamente D->fuente = check (sin if)
-    */
     assert(D);
     
     VerticeP v = crear_vertice(x);
     VerticeP check = list_search(D->data, v, &comparar_vertice);
-    v = destruir_vertice(v);
-    
-    D->fuente = check;
 
+    if(check) {
+        D->fuente = check;
+        v = destruir_vertice(v);
+    } else {
+        D->fuente = v;
+    }
 }
 
 void FijarResumidero(DovahkiinP D, u64 x) {
     assert(D);
-    /* Analizar precondiciones */
     /* Con una Main traicionera podrian fijarse muchas fuentes. deberia fijar 1 sola fuente y no mas */
     //RP de PY : El main lo hacemos nosotros por lo cual no hay trampa pero entiendo la idea.
     //Lo que si se podria hacer es prohibir cambiar la fuente y el resumidero si ya estamos
@@ -65,9 +66,13 @@ void FijarResumidero(DovahkiinP D, u64 x) {
     
     VerticeP v = crear_vertice(x);
     VerticeP check = list_search(D->data, v, &comparar_vertice);
-    v = destruir_vertice(v);
     
-    D->resumidero = check;
+    if(check) {
+        D->resumidero = check;
+        v = destruir_vertice(v);
+    } else {
+        D->resumidero = v;
+    }
 }
 
 int ImprimirFuente(DovahkiinP D) {
@@ -148,7 +153,8 @@ Lado LeerUnLado() {
             new = crear_lado(x, y, atoi64(tokenc));
         }
         else {
-            free(new);
+            /*  "free(new);" significa "free(NULL);", pues "LadoP new = NULL;", 
+                lo cual no es necesario realizar. */
             new = LadoNulo;
         }
     }
@@ -159,7 +165,7 @@ Lado LeerUnLado() {
 
 int CargarUnLado(DovahkiinP D, LadoP L) {
     /*
-        Me parece ineficiente lo del if. Por lo que habia entendido el grafo
+        PY: Me parece ineficiente lo del if. Por lo que habia entendido el grafo
         no tenia ciclos por lo cual comparar x e y en un lado no tiene sentido
         (pero esto no es tan grave es una sola operacion). Lo que si me parece
         grave es checkear que no se haya agregado 2 veces el mismo lado , pueden
@@ -178,35 +184,38 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
     VerticeP x = (VerticeP)list_search(D->data, L->x, &comparar_vertice);
     VerticeP y = (VerticeP)list_search(D->data, L->y, &comparar_vertice);
     member_t new = member_create(L);
+    int result;
     
-    if(!x) {
+    if(x == NULL) {
         D->data = list_add(D->data, L->x);
     }
     else {
         L->x = destruir_vertice(L->x);
         L->x = x;
     }
-    if(!y) {
+    if(y == NULL) {
         D->data = list_add(D->data, L->y);
     }
     else {
         L->y = destruir_vertice(L->y);
         L->y = y;
     }
+    /*  aux es el lado inverso de L. */
     Lado aux = crear_lado(L->y, L->x, L->c);
-    if(!comparar_vertice(L->x, L->y)) {
-        if(!list_search(L->x->vecinos_forward, L, &comparar_lados) && !list_search(L->x->vecinos_backward, aux, &comparar_lados)) {
-            L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
-        }
-        if(!list_search(L->y->vecinos_backward, L, &comparar_lados) && !list_search(L->y->vecinos_forward, aux, &comparar_lados)) {
-            L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
-        }
-        aux = destruir_lado(aux);
-        return 1;
+    if(!comparar_vertice(L->x, L->y) 
+        && !list_search(L->x->vecinos_forward, L, &comparar_lados) 
+        && !list_search(L->x->vecinos_backward, aux, &comparar_lados) 
+        && !list_search(L->y->vecinos_backward, L, &comparar_lados) 
+        && !list_search(L->y->vecinos_forward, aux, &comparar_lados)) {
+        /*  Aquí se comprobó que el lado no es un loop, que no está ya registrado, y que el lado inverso no existe. */
+        L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
+        L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
+        result =  1;
     } else {
-        return 0;
+        result = 0;
     }
-    
+    aux = destruir_lado(aux);
+    return result;
 }
 
 int Prepararse(DovahkiinP D) {
@@ -241,8 +250,8 @@ int ActualizarDistancias(DovahkiinP D) {
     }
     if(comparar_vertice(get_content(temp), D->resumidero)) {
         /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
-        result = 1;
         D->temp = list_destroy_keep_members(D->temp);
+        result = 1;
     }
     return result;
 }
@@ -343,12 +352,15 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
 /*  La siguiente implementación de BusquedaCaminoAumentante va guardando en D->FF_DFS 
     todas las aristas involucradas en un camino de s a t. */
 int BusquedaCaminoAumentante(DovahkiinP D) {
-    /*  Si ya existía una lista D->FF_DFS, entonces no se llamó a alguna función AumentarFlujo.
-        ¿Está bien proseguir? CHEQUEAR ESTO! */
+    /*  Maico: ¿Se debería chequear que los caminos no vuelven eventualmente a la fuente? Porque, al
+        momento de cargar los lados, no se verifica que el vértice de llegada no sea la fuente.  */
     member_t vecinos_de_s;
-    Lado lado_correspondiente;
+    FF_DFSLado lado_correspondiente;
+    bool forward = true;
+    bool backward = false;
 
-    if(!(list_empty(D->FF_DFS))) {
+
+    if(D->FF_DFS) {
         D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
     }
     D->FF_DFS = list_create();
@@ -357,16 +369,23 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
 
     while(vecinos_de_s) {
         /*  Se agrega el lado forward a D->FF_DFS y se procede a ver si a partir de aquí se puede llegar al resumidero. */
-        lado_correspondiente = (Lado)(get_content(vecinos_de_s));
+        lado_correspondiente = (Lado)(get_content(vecinos_de_s)), true);
         D->FF_DFS = list_add(D->FF_DFS, lado_correspondiente);
         /*  El flujo desde el cual se debe comenzar el análisis es el flujo restante a enviar a través de este lado
             desde la fuente al vértice (vecinos_de_s->member)->y. */
         //PY : Eu estas pisando el D->flujo , no guardas los flujos anteriores. Me equivoco ?
         //ademas que se calcula aca ? Si tenemos x y 30 y ya se mando un flujo de 15 entonces
         //la capacidad vale 15 y el flujo 15 tambien , 15-15 = 0.
+        /*  Maico : No, la capacidad vale 30 (no cambia) y el flujo 15, por lo que D->flujo := 30 - 15 = 0
+            Ademas, se pisa el valor de D->flujo, pues D->flujo indica el flujo que se debe enviar en la proxima
+            llamada a AumentarFlujo, y ahora se está intentando ver para lado_correspondiente en particular si se
+            puede llegar al resumidero (o sea, en el paso i-esimo se puede ver que los primeros (i-1) lado_correspondientes
+            no llegan al resumidero, y todavia no se analizo el caso para los restantes lado_correspondientes, por 
+            lo que no hay conflicto a la hora de pisar D->flujo). */
         D->flujo = lado_correspondiente->c - lado_correspondiente->f;
         /*  Se debe pasar como parámetro la iteración actual que estableció nivel(x) de cada vértice visitado. */
         if(BusquedaCaminoAumentanteAux(lado_correspondiente->y, D->FF_DFS, D->resumidero, &(D->flujo), D->iteracion)) {
+            /*  Se llega al resumidero. */
             return 1;
         } else {
             /*  Si no se llega al resumidero desde (vecinos_de_s->member)->y, entonces se debe eliminar el último
@@ -385,7 +404,7 @@ u64 AumentarFlujo(DovahkiinP D) {
     //funcion entonces no toco el codigo). Pero si se limpia la lista (y no se inicializa D->Dff_DFS en NULL)
     //entonces podriamos tener una corrupcion de memoria o un segmentation fault no se 
     //(NOOOOOOOOOOOOOOO :'(((((((((( )
-    if(!(list_empty(D->FF_DFS))) {
+    if(D->FF_DFS && !list_empty(D->FF_DFS)) {
         /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
             Se procede a actualizar el flujo en los lados involucrados.
             Se empieza desde el último lado guardado porque se pide el imprimir desde t a s. */
@@ -406,7 +425,7 @@ u64 AumentarFlujo(DovahkiinP D) {
         return 1;
     } else {
         /*  No se ha hecho una llamada a BusquedaCaminoAumentante que haya establecido un camino de la fuente
-            al resumidero en D->FF_DFS. */
+            al resumidero en D->FF_DFS, o ya se ha enviado flujo por un tal camino aumentante. */
         return 0;
     }
 }

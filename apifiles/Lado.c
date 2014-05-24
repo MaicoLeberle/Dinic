@@ -15,9 +15,28 @@ LadoP crear_lado(VerticeP x, VerticeP y, u64 c) {
     return new;
 }
 
+FF_DFSLadoP crear_FF_DFSLado(Lado lado, bool direccion) {
+    assert(lado);
+    FF_DFSLadoP new = calloc(1, sizeof(struct FF_DFSLado));
+    if(new) {
+        new->lado = lado;
+        new->is_forward = direccion;
+    }
+    return new;
+}
+
 void *destruir_lado(void *ptr) {
     assert(ptr);
     
+    free(ptr);
+    ptr = NULL;
+    
+    return ptr;
+}
+
+void *destruir_FF_DFSLado(void *ptr) {
+    assert(ptr);
+
     free(ptr);
     ptr = NULL;
     

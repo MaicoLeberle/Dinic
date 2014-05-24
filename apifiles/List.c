@@ -51,7 +51,7 @@ list_t list_destroy_keep_members(list_t list) {
 
     while(current) {
         temp = temp->next;
-        free(current);
+        current = member_destroy_keep_content(current);
         current = temp;
     }
     
@@ -84,6 +84,13 @@ member_t member_destroy(member_t member, void *function_destroy(void*)) {
     
     return NULL;
 }
+
+member_t member_destroy_keep_content(member_t member) {
+    assert(member != NULL);
+
+    free(member);
+    return NULL;
+ }
 
 list_t list_add(list_t list, void *object) {
     assert(list != NULL);

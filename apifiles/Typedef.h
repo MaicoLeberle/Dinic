@@ -10,4 +10,5 @@ typedef struct DovahkiinSt *DovahkiinP;
 typedef struct Vertice *VerticeP;
 typedef struct Lado *LadoP;
 typedef struct Lado *Lado;
+typedef struct FF_DFSLado *FF_DFSLadoP;
 #endif

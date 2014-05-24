@@ -21,7 +21,10 @@ void *destruir_vertice(void *ptr) {
     if(vertice->vecinos_forward) {
         vertice->vecinos_forward = list_destroy(vertice->vecinos_forward, &destruir_lado);
     }
-    free(vertice->vecinos_backward);
+    /*  Recordar que todos los lados están presentes entre todos los vecinos_forward de los vértices
+        y están espejados entre todos los vecinos_backward de los vértices, es por eso que no se deben
+        eliminar en este punto, ya que ya fueorn eliminados. */
+    vertice->vecinos_backward = list_destroy_keep_members(vertice->vecinos_backward);
     free(vertice);
     
     return NULL;
