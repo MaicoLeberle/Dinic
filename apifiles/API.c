@@ -107,17 +107,20 @@ static uint64_t atoi64(char *s) {
 	
 	return result;
 }
-bool is_valid(char *s){
-    bool b2 = true;
-    if(s)
-    {  
-        char c = *s++;
-        while (c != '\0'){
-            b2 = b2 && isdigit(c);
+static bool is_valid(char *s) {
+    bool valid = false;
+    char c = '\0'
+    
+    if(s && strlen(s) > 0) {  
+        c = *s++;
+        while (c != '\0' && isdigit(c)) {
             c = *s++;
         }
+        if(c == '\0') {
+            valid = true;
+        }
     }
-    return b2;
+    return valid;
 }
 
 Lado LeerUnLado() {
