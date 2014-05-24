@@ -39,6 +39,12 @@ int DestruirDovahkiin(DovahkiinP D) {
 }
 
 void FijarFuente(DovahkiinP D, u64 x) {
+    /*
+        Se busca x en D->data (por eso necesitamos crear un vertice
+        v para buscarlo en D->data.
+        Si v no esta en D->data entonces check = NULL , por lo cual esta 
+        bien poner directamente D->fuente = check (sin if)
+    */
     assert(D);
     
     VerticeP v = crear_vertice(x);
