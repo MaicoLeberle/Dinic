@@ -45,11 +45,7 @@ void FijarFuente(DovahkiinP D, u64 x) {
     VerticeP check = list_search(D->data, v, &comparar_vertice);
     v = destruir_vertice(v);
     
-    if(check){
-        D->fuente = check;
-    }else{
-        D->fuente = v;
-    }
+    D->fuente = check;
 
 }
 
@@ -64,11 +60,8 @@ void FijarResumidero(DovahkiinP D, u64 x) {
     VerticeP v = crear_vertice(x);
     VerticeP check = list_search(D->data, v, &comparar_vertice);
     v = destruir_vertice(v);
-    if(check){
-        D->resumidero = check;
-    }else{
-        D->resumidero = v;
-    }
+    
+    D->resumidero = check;
 }
 
 int ImprimirFuente(DovahkiinP D) {
