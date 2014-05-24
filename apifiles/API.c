@@ -112,7 +112,7 @@ static uint64_t atoi64(char *s) {
 }
 static bool is_valid(char *s) {
     bool valid = false;
-    char c = '\0'
+    char c = '\0';
     
     if(s && strlen(s) > 0) {  
         c = *s++;
@@ -224,7 +224,6 @@ int ActualizarDistancias(DovahkiinP D) {
     assert(D);
  
     member_t temp = NULL;
-    bool found =false;
     int result = 0;
    
     D->iteracion += 1;
