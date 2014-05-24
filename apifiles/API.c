@@ -264,6 +264,7 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
     /*  Primero, se consideran los vecinos forward. */
     member_t temp = list_get_first(vertice->vecinos_forward);
     Lado lado;
+    FF_DFSLadoP lado_y_direccion;
     u64 min_flujo;
 
     while(temp) {
@@ -280,21 +281,22 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
                 Por último, si el flujo a mandar es 0, entonces el lado está saturado. */
             continue;
         } else {
+            lado_y_direccion = crear_FF_DFSLado(lado, true);
             /*  Es un vértice válido para continuar el análisis. */
             if(comparar_vertice(lado->y, resumidero)) {
                 /*  Se llegó al resumidero. Se debe agregar el último lado de este camino y actualizar el flujo que se debería mandar
                     al llamar a AumentarFlujo o AumentarFlujoYTambienImprimirCamino. */
-                list_add(camino_inicial, lado);
+                list_add(camino_inicial, lado_y_direccion);
                 (*flujo) = min_flujo;
                 return true;
             } else {
                 /*  Se debe seguir buscando. */
                 (*flujo) = min_flujo;
-                if(!BusquedaCaminoAumentanteAux(lado->y, list_add(camino_inicial, lado), resumidero, flujo, iteracion)) {
+                if(!BusquedaCaminoAumentanteAux(lado->y, list_add(camino_inicial, lado_y_direccion), resumidero, flujo, iteracion)) {
                     /*  No se llega al resumidero a través de y. Se debe eliminar el último lado agregado a la lista del camino 
                         al llamar a list_add(camino_inicial, lado). */
                     /*  ¿Se debe hacer un destruir_vertice()? ¿Esto no elimina el lado guardado en D->data? */
-                    remove_last_keep_content(camino_inicial);
+                    remove_last(camino_inicial, &destruir_FF_DFSLado);
                     /*  Pasar a considerar el siguiente vecino forward de vertice. */
                     temp = list_next(temp);
                 } else {
@@ -325,13 +327,14 @@ bool BusquedaCaminoAumentanteAux(VerticeP vertice, list_t camino_inicial, Vertic
             /*  Es un vértice válido para continuar el análisis. Como no existen (¿es así? chequear con el enunciado) lados forward desde
                 el resumidero, entonces no existe la posibilidad de llegar a éste a través de un último lado backward.
                 Luego, sólo se debe proceder a evaluar los lados subsiguientes. */
+            lado_y_direccion = crear_FF_DFSLado(lado, false);
             (*flujo) = min_flujo;
-            if(!BusquedaCaminoAumentanteAux(lado->x, list_add(camino_inicial, lado), resumidero, flujo, iteracion)) {
+            if(!BusquedaCaminoAumentanteAux(lado->x, list_add(camino_inicial, lado_y_direccion), resumidero, flujo, iteracion)) {
 
                 /*  No se llega al resumidero a través de x. Se debe eliminar el último lado agregado a la lista del camino 
                     al llamar a list_add(camino_inicial, lado). */
                 /*  ¿Se debe hacer un destruir_vertice()? ¿Esto no elimina el lado guardado en D->data? */
-                remove_last_keep_content(camino_inicial);
+                remove_last(camino_inicial, &destruir_FF_DFSLado);
                 /*  Pasar a considerar el siguiente vecino forward de vertice. */
                 temp = list_next(temp);
             } else {
@@ -355,9 +358,8 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
     /*  Maico: ¿Se debería chequear que los caminos no vuelven eventualmente a la fuente? Porque, al
         momento de cargar los lados, no se verifica que el vértice de llegada no sea la fuente.  */
     member_t vecinos_de_s;
-    FF_DFSLado lado_correspondiente;
-    bool forward = true;
-    bool backward = false;
+    Lado lado;
+    FF_DFSLadoP lado_y_direccion;
 
 
     if(D->FF_DFS) {
@@ -369,8 +371,9 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
 
     while(vecinos_de_s) {
         /*  Se agrega el lado forward a D->FF_DFS y se procede a ver si a partir de aquí se puede llegar al resumidero. */
-        lado_correspondiente = (Lado)(get_content(vecinos_de_s)), true);
-        D->FF_DFS = list_add(D->FF_DFS, lado_correspondiente);
+        lado = (Lado)(get_content(vecinos_de_s));
+        lado_y_direccion = crear_FF_DFSLado(lado, true);
+        D->FF_DFS = list_add(D->FF_DFS, lado_y_direccion);
         /*  El flujo desde el cual se debe comenzar el análisis es el flujo restante a enviar a través de este lado
             desde la fuente al vértice (vecinos_de_s->member)->y. */
         //PY : Eu estas pisando el D->flujo , no guardas los flujos anteriores. Me equivoco ?
@@ -382,15 +385,15 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
             puede llegar al resumidero (o sea, en el paso i-esimo se puede ver que los primeros (i-1) lado_correspondientes
             no llegan al resumidero, y todavia no se analizo el caso para los restantes lado_correspondientes, por 
             lo que no hay conflicto a la hora de pisar D->flujo). */
-        D->flujo = lado_correspondiente->c - lado_correspondiente->f;
+        D->flujo = lado->c - lado->f;
         /*  Se debe pasar como parámetro la iteración actual que estableció nivel(x) de cada vértice visitado. */
-        if(BusquedaCaminoAumentanteAux(lado_correspondiente->y, D->FF_DFS, D->resumidero, &(D->flujo), D->iteracion)) {
+        if(BusquedaCaminoAumentanteAux(lado->y, D->FF_DFS, D->resumidero, &(D->flujo), D->iteracion)) {
             /*  Se llega al resumidero. */
             return 1;
         } else {
             /*  Si no se llega al resumidero desde (vecinos_de_s->member)->y, entonces se debe eliminar el último
                 lado agregado a la lista que está marcando el camino de la fuente al resumidero. */
-            remove_last_keep_content(D->FF_DFS);
+            remove_last(D->FF_DFS, &destruir_FF_DFSLado);
         }
         /*  Se debe analizar a continuación el siguiente vecino forward de la fuente. */
         vecinos_de_s = list_next(vecinos_de_s);

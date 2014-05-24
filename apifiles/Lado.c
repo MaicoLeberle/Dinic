@@ -39,7 +39,7 @@ void *destruir_FF_DFSLado(void *ptr) {
 
     free(ptr);
     ptr = NULL;
-    
+
     return ptr;
 }
 
