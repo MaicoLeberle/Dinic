@@ -57,6 +57,10 @@ void FijarResumidero(DovahkiinP D, u64 x) {
     assert(D);
     /* Analizar precondiciones */
     /* Con una Main traicionera podrian fijarse muchas fuentes. deberia fijar 1 sola fuente y no mas */
+    //RP de PY : El main lo hacemos nosotros por lo cual no hay trampa pero entiendo la idea.
+    //Lo que si se podria hacer es prohibir cambiar la fuente y el resumidero si ya estamos
+    //buscando un camino (tipo un booleano en dovakin) pero es un detalle menor creo.
+    
     VerticeP v = crear_vertice(x);
     VerticeP check = list_search(D->data, v, &comparar_vertice);
     v = destruir_vertice(v);
@@ -233,16 +237,11 @@ int ActualizarDistancias(DovahkiinP D) {
     D->temp = list_add(D->temp, D->fuente);//Destruir member_t
     temp = list_get_first(D->temp);
      
-    while(temp) {
+    while(temp && !comparar_vertice(get_content(temp), D->resumidero)) {
         D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->iteracion);
-        found = comparar_vertice(get_content(temp), D->resumidero);
-        if(found) {
-            found = true;
-            break;
-        }
         temp = list_next(temp);
     }
-    if(found) {
+    if(comparar_vertice(get_content(temp), D->resumidero)) {
         /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
         result = 1;
         D->temp = list_destroy_keep_members(D->temp);
@@ -364,6 +363,9 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
         D->FF_DFS = list_add(D->FF_DFS, lado_correspondiente);
         /*  El flujo desde el cual se debe comenzar el análisis es el flujo restante a enviar a través de este lado
             desde la fuente al vértice (vecinos_de_s->member)->y. */
+        //PY : Eu estas pisando el D->flujo , no guardas los flujos anteriores. Me equivoco ?
+        //ademas que se calcula aca ? Si tenemos x y 30 y ya se mando un flujo de 15 entonces
+        //la capacidad vale 15 y el flujo 15 tambien , 15-15 = 0.
         D->flujo = lado_correspondiente->c - lado_correspondiente->f;
         /*  Se debe pasar como parámetro la iteración actual que estableció nivel(x) de cada vértice visitado. */
         if(BusquedaCaminoAumentanteAux(lado_correspondiente->y, D->FF_DFS, D->resumidero, &(D->flujo), D->iteracion)) {
@@ -381,6 +383,10 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
 
 
 u64 AumentarFlujo(DovahkiinP D) {
+    //PY : No me parece una buena idea checkear esto en el if (todavia no se bien quien llama a esta
+    //funcion entonces no toco el codigo). Pero si se limpia la lista (y no se inicializa D->Dff_DFS en NULL)
+    //entonces podriamos tener una corrupcion de memoria o un segmentation fault no se 
+    //(NOOOOOOOOOOOOOOO :'(((((((((( )
     if(!(list_empty(D->FF_DFS))) {
         /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
             Se procede a actualizar el flujo en los lados involucrados.
