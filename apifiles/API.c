@@ -402,7 +402,7 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
 }
 
 
-u64 AumentarFlujo(DovahkiinP D) {
+u64 AumentarFlujoAux(DovahkiinP D, bool imprimir) {
     //PY : No me parece una buena idea checkear esto en el if (todavia no se bien quien llama a esta
     //funcion entonces no toco el codigo). Pero si se limpia la lista (y no se inicializa D->Dff_DFS en NULL)
     //entonces podriamos tener una corrupcion de memoria o un segmentation fault no se 
@@ -416,15 +416,20 @@ u64 AumentarFlujo(DovahkiinP D) {
         assert(D->flujo);
 
         member_t temp = list_get_last(D->FF_DFS);
-        Lado lado;
+        FF_DFSLadoP lado_y_direccion;
         while(temp) {
-            lado = (Lado)get_content(temp);
-            lado->f = lado->f + D->flujo;
+            lado_y_direccion = (FF_DFSLadoP)(get_content(temp));
+            if(lado_y_direccion->is_forward)
+                (lado_y_direccion->lado)->f = (lado_y_direccion->lado)->f + D->flujo;
+            else
+                (lado_y_direccion->lado)->f = (lado_y_direccion->lado)->f - D->flujo;
+            if(imprimir)
+                printf("%" PRIu64 ";", ((lado_y_direccion->lado)->y)->nombre);
             temp = list_next(temp);
         }
         /*  Se debe resetear el flujo a enviar y limpiar la lista D->FF_DFS. */
         D->flujo = 0;
-        D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
+        D->FF_DFS = list_destroy(D->FF_DFS, &destruir_FF_DFSLado);
         return 1;
     } else {
         /*  No se ha hecho una llamada a BusquedaCaminoAumentante que haya establecido un camino de la fuente
@@ -434,34 +439,15 @@ u64 AumentarFlujo(DovahkiinP D) {
 }
 
 
-u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
-    if(!(list_empty(D->FF_DFS))) {
-        /*  BusquedaCaminoAumentante encontró un camino de la fuente al resumidero y lo almacenó en D->FF_DFS.
-            Se procede a actualizar el flujo en los lados involucrados.
-            Se empieza desde el último lado guardado porque se pide el imprimir desde t a s. */
-
-        /*  Verifico que efectivamente se ha encontrado un flujo distinto de 0 para enviar. */
-        assert(D->flujo);
-
-        member_t temp = list_get_last(D->FF_DFS);
-        Lado lado;
-        while(temp) {
-            lado = (Lado)get_content(temp);
-            lado->f = lado->f + D->flujo ;
-            printf("%" PRIu64 ";", (lado->y)->nombre);
-            temp = list_next(temp);
-        }
-        printf("s:\t%" PRIu64, D->flujo);
-        /*  Se debe resetear el flujo a enviar. */
-        D->flujo = 0;
-        D->FF_DFS = list_destroy_keep_members(D->FF_DFS);
-        return 1;
-    } else {
-        /*  No se ha hecho una llamada a BusquedaCaminoAumentante que haya establecido un camino de la fuente
-            al resumidero en D->FF_DFS. */
-        return 0;
-    }
+u64 AumentarFlujo(DovahkiinP D) {
+    return AumentarFlujoAux(D, false);
 }
+
+
+u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
+    return AumentarFlujoAux(D, true);
+}
+
 
 /*  La estrategia a seguir en la siguiente función es sencilla: se recorre cada uno de los vértices
     y se imprimen los lados que comiencen en él (i.e., los lados en vecinos_forward). Esto es suficiente
