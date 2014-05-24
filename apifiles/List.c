@@ -47,14 +47,16 @@ list_t list_destroy_keep_members(list_t list) {
     assert(list);
 
     member_t current = list->first;
-    member_t temp;
+    member_t temp = current;
 
     while(current) {
         temp = temp->next;
-        current = member_destroy_keep_content(current);
+        free(current);
         current = temp;
     }
+    
     free(list);
+    
     return NULL;
 }
 
@@ -80,13 +82,6 @@ member_t member_destroy(member_t member, void *function_destroy(void*)) {
     }
     free(member);
     
-    return NULL;
-}
-
-member_t member_destroy_keep_content(member_t member) {
-    assert(member);
-
-    free(member);
     return NULL;
 }
 
