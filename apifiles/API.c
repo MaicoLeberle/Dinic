@@ -155,11 +155,27 @@ Lado LeerUnLado() {
 }
 
 int CargarUnLado(DovahkiinP D, LadoP L) {
+    /*
+        Me parece ineficiente lo del if. Por lo que habia entendido el grafo
+        no tenia ciclos por lo cual comparar x e y en un lado no tiene sentido
+        (pero esto no es tan grave es una sola operacion). Lo que si me parece
+        grave es checkear que no se haya agregado 2 veces el mismo lado , pueden
+        haber miles de vertices y seria un desastre checkear para cado lado si ya 
+        existe (o sea buscar en 4 listas por cada lado...).
+        El ano pasado no daban 2 veces el mismo lado por stdin.
+        
+        De toda forma no se tienen que hacer esos 4 checkeos. A lo sumo tienen que ser
+        2 (pues que si se agrega el lado xy entonces xy va a estar en la cola forward de x
+        y la cola backward de y, si no esta en la cola forward de x entonces tambien no esta
+        en la cola backward de y).
+    */
     assert(D);
     assert(L);
     
     VerticeP x = (VerticeP)list_search(D->data, L->x, &comparar_vertice);
     VerticeP y = (VerticeP)list_search(D->data, L->y, &comparar_vertice);
+    member_t new = member_create(L);
+    
     if(!x) {
         D->data = list_add(D->data, L->x);
     }
@@ -174,7 +190,6 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
         L->y = destruir_vertice(L->y);
         L->y = y;
     }
-    member_t new = member_create(L);
     Lado aux = crear_lado(L->y, L->x, L->c);
     if(!comparar_vertice(L->x, L->y)) {
         if(!list_search(L->x->vecinos_forward, L, &comparar_lados) && !list_search(L->x->vecinos_backward, aux, &comparar_lados)) {
