@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +24,7 @@
 struct DovahkiinSt {
 	VerticeP fuente, resumidero;
 	u64 flujo;
-	list_t data, temp, FF_DFS;
+	list_t data, temp;
 	unsigned int iteracion;
 };
 

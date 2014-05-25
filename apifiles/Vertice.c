@@ -5,11 +5,14 @@ VerticeP crear_vertice(u64 nombre) {
     VerticeP new = calloc(1, sizeof(struct Vertice));
     if(new) {
         new->nombre = nombre;
+        new->temp_flujo = 0;
         new->vecinos_forward = list_create();
         new->vecinos_backward = list_create();
+        new->vecinos_posibles = list_create();
         new->distancia = 0;
         new->iteracion = 0;
-        new->aristas_disponibles = list_create();
+        new->is_forward = false;
+        new->ancestro = NULL;
     }
     
     return new;
@@ -40,39 +43,38 @@ bool comparar_vertice(void *x, void *y) {
     return(v_1->nombre == v_2->nombre);
 }
 
-list_t add_neighboor_to_list(list_t list, VerticeP v, unsigned int i) {
+list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsigned int i) {
     assert(list);
     assert(v);
    
     member_t member = list_get_first(v->vecinos_forward);
-    LadoP lado = NULL;
+    LadoP lado = get_content(member);
+    bool found = false;
     
-    if(v->iteracion != i) {
-        free(v->aristas_disponibles);
-        v->aristas_disponibles = list_create();
-    }
-    
-    while(member) {
+    while(member && !found) {
         lado = get_content(member);
         if(lado->y->iteracion != i && (lado->c - lado->f) > 0) {
             //Si no lo visite esta iteracion y hay capacidad
-            v->aristas_disponibles = list_add(v->aristas_disponibles, lado);
             (lado->y)->distancia = (lado->x)->distancia + 1;
             (lado->y)->iteracion = i;
             list = list_add(list, lado->y);
+            if(comparar_vertice(resumidero, lado->y)) {
+                found = true;
+            }
         }
         member = list_next(member);
     }
     member = list_get_first(v->vecinos_backward);
-    while(member) {
+    while(member && !found) {
         lado = get_content(member);
         if(lado->y->iteracion != i && lado->f > 0) {
             //Si no lo visite esta iteracion y hay flujo
-            v->aristas_disponibles = list_add(v->aristas_disponibles, lado);
             (lado->x)->distancia = (lado->y)->distancia + 1;
             (lado->x)->iteracion = i;
             list = list_add(list, lado->y);
-            
+            if(comparar_vertice(resumidero, lado->x)) {
+                found = true;
+            }
         }
         member = list_next(member);
     }

@@ -214,6 +214,19 @@ list_t remove_last(list_t list, void *function_destroy(void*)) {
     return NULL;
 }
 
+list_t remove_first_keep_content(list_t list) {
+    assert(list);
+    assert(list_size(list));
+    
+    member_t temp = list->first->next;
+    
+    free(list->first);
+    list->first = temp;
+    list->length -= 1;
+    
+    return list;
+}
+
 list_t remove_last_keep_content(list_t list) {
     assert(list);
     assert(!list_empty(list));

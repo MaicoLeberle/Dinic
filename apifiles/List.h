@@ -26,6 +26,6 @@ member_t list_next(member_t member);
 member_t list_previous(member_t member);
 list_t remove_last(list_t list, void *function_destroy(void*));
 list_t remove_last_keep_content(list_t list);
-/*	member_t remove_first(member_t member, void *function_destroy(void*)); */
+list_t remove_first_keep_content(list_t list);
 
 #endif

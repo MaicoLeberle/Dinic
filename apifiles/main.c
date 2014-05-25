@@ -19,7 +19,7 @@ int main(void) {
             AumentarFlujo(dragon);
         }
     }
-    DestruirDovahkiin(dragon);
+    //DestruirDovahkiin(dragon);
     
     return 1;
 }
