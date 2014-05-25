@@ -202,12 +202,12 @@ list_t remove_last(list_t list, void *function_destroy(void*)) {
     assert(!list_empty(list));
 
     member_t temp = list->last;
-    list->last = list->last->previous
+    list->last = list->last->previous;
     
     if((list->last)->member) {
         function_destroy((list->last)->member);
     }
-    free(list->last);
+    free(temp);
     
     list->length -= 1;
 
