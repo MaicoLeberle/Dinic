@@ -211,6 +211,12 @@ int Prepararse(DovahkiinP D) {
 }
 
 int ActualizarDistancias(DovahkiinP D) {
+    /*
+        Hace una busqueda FF-BFS (forwards y los backwards
+        si lado->c - lado->f > 0 y no fue visitado entonces lo agrega (forwards)
+        si lado->f > 0 y no fue visitado lo agrega (backwards)
+        sino no agrega.
+    */
     assert(D);
  
     member_t temp = NULL;
@@ -238,35 +244,42 @@ int ActualizarDistancias(DovahkiinP D) {
 }
 
 VerticeP avanzar(VerticeP x, u64 *flujo) {
+    /*
+        Principalmente actualiza los datos del siguiente vertice.
+        Actualiza:
+        -el ancestro de next
+        -el temp_flujo de next
+        -y avisa si es forward
+    */
     assert(x);
     
     VerticeP next = x;
-    
     LadoP lado = get_content(list_get_first(x->vecinos_posibles));
+    bool posible = false;
     if(comparar_vertice(x, lado->x)) {
         if(lado->c - lado->f) {
+            posible = true;
             next = lado->y;
-            next->ancestro = x;
-            *flujo = min(*flujo, lado->c);
-            next->temp_flujo = *flujo;
+            *flujo = min(*flujo, lado->c - lado->f);
             next->is_forward = true;
-        }
-        else {
-            remove_first_keep_content(x->vecinos_posibles);
         }
     }
     else {
         if(lado->f) {
+            posible = true;
             next = lado->x;
-            next->ancestro = x;
             *flujo = min(*flujo, lado->f);
-            next->temp_flujo = *flujo;
             next->is_forward = false;
         }
-        else {
-            remove_first_keep_content(x->vecinos_posibles);
-        }
     }
+    if(posible) {
+        next->ancestro = x;
+        next->temp_flujo = *flujo;
+    }
+    else {
+        x->vecinos_posibles = remove_first_keep_content(x->vecinos_posibles);
+    }
+            
     return next;
 }
 
@@ -277,6 +290,13 @@ VerticeP retroceder(VerticeP x) {
 }
 
 list_t buscar_vecinos_posibles(VerticeP v) {
+    /*
+        Agrega en v->vecinos_posibles todos los vecinos
+        que cumplen :
+        -Si level(v) = n entonces level(vecino_de_v) = n + 1
+        -Si es forward entonces temp->c - temp->f > 0
+        -Si es backward entonces temp->f > 0
+    */
     assert(v);
     
     member_t member = list_get_first(v->vecinos_forward);
@@ -341,6 +361,13 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
 }
 
 u64 AumentarFlujo(DovahkiinP D) {
+    /*
+        De t sacamos el ancestro.
+        Sacamos el ancestro del ancestro del ancestro ... hasta
+        llegar a la fuente.
+        vertice->temp_aux guarda el flujo que se podria mandar
+        hasta tal vertice.
+    */
     assert(D);
     
     u64 flujo = D->resumidero->temp_flujo;
