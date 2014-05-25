@@ -229,6 +229,7 @@ int ActualizarDistancias(DovahkiinP D) {
     }
    
     D->temp = list_add(D->temp, D->fuente);//Destruir member_t
+    D->fuente->iteracion = D->iteracion;
     temp = list_get_first(D->temp);
      
     while(temp && !comparar_vertice(get_content(temp), D->resumidero)) {
@@ -285,48 +286,9 @@ VerticeP avanzar(VerticeP x, u64 *flujo) {
 
 VerticeP retroceder(VerticeP x) {
     assert(x);
-    
+    x->ancestro->vecinos_posibles = remove_first_keep_content(x->ancestro->vecinos_posibles);
     return x->ancestro;
 }
-
-list_t buscar_vecinos_posibles(VerticeP v) {
-    /*
-        Agrega en v->vecinos_posibles todos los vecinos
-        que cumplen :
-        -Si level(v) = n entonces level(vecino_de_v) = n + 1
-        -Si es forward entonces temp->c - temp->f > 0
-        -Si es backward entonces temp->f > 0
-    */
-    assert(v);
-    
-    member_t member = list_get_first(v->vecinos_forward);
-    LadoP temp = NULL;
-    
-    if(!list_empty(v->vecinos_posibles)) {
-        v->vecinos_posibles = list_destroy_keep_members(v->vecinos_posibles);
-        v->vecinos_posibles = list_create();
-    }
-    
-    while(member) {
-        temp = get_content(member);
-        if((v->distancia == temp->y->distancia - 1) && (temp->c - temp->f > 0)) {
-            v->vecinos_posibles = list_add(v->vecinos_posibles, temp);
-        }
-        member = list_next(member);
-    }
-    
-    member = list_get_first(v->vecinos_backward);
-    
-    while(member) {
-        temp = get_content(member);
-        if((v->distancia == temp->x->distancia - 1) && temp->f > 0) {
-            v->vecinos_posibles = list_add(v->vecinos_posibles, temp);
-        }
-        member = list_next(member);
-    }
-    
-    return v->vecinos_posibles;
-} 
 
 int BusquedaCaminoAumentante(DovahkiinP D) {
     /*
@@ -343,7 +305,7 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
     u64 flujo = (u64)INFINITY;
     
     while(!comparar_vertice(D->resumidero, vertice_actual) && continuar) {
-        if(!list_empty(buscar_vecinos_posibles(vertice_actual))) {
+        if(!list_empty(vertice_actual->vecinos_posibles)) {
             vertice_actual = avanzar(vertice_actual, &flujo);
         }
         else if(!comparar_vertice(D->fuente, vertice_actual)) {

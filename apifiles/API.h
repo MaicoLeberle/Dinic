@@ -44,5 +44,4 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D);
 void ImprimirFlujo(DovahkiinP D);
 void ImprimirValorFlujo(DovahkiinP D);
 void ImprimirCorte(DovahkiinP D);
-
 #endif

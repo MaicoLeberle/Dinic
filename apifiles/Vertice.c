@@ -43,6 +43,45 @@ bool comparar_vertice(void *x, void *y) {
     return(v_1->nombre == v_2->nombre);
 }
 
+list_t buscar_vecinos_posibles(VerticeP v) {
+    /*
+        Agrega en v->vecinos_posibles todos los vecinos
+        que cumplen :
+        -Si level(v) = n entonces level(vecino_de_v) = n + 1
+        -Si es forward entonces temp->c - temp->f > 0
+        -Si es backward entonces temp->f > 0
+    */
+    assert(v);
+    
+    member_t member = list_get_first(v->vecinos_forward);
+    LadoP temp = NULL;
+    
+    if(!list_empty(v->vecinos_posibles)) {
+        v->vecinos_posibles = list_destroy_keep_members(v->vecinos_posibles);
+        v->vecinos_posibles = list_create();
+    }
+    
+    while(member) {
+        temp = get_content(member);
+        if((v->distancia == temp->y->distancia - 1) && (temp->c - temp->f > 0)) {
+            v->vecinos_posibles = list_add(v->vecinos_posibles, temp);
+        }
+        member = list_next(member);
+    }
+    
+    member = list_get_first(v->vecinos_backward);
+    
+    while(member) {
+        temp = get_content(member);
+        if((v->distancia == temp->x->distancia - 1) && temp->f > 0) {
+            v->vecinos_posibles = list_add(v->vecinos_posibles, temp);
+        }
+        member = list_next(member);
+    }
+    
+    return v->vecinos_posibles;
+} 
+
 list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsigned int i) {
     assert(list);
     assert(v);
@@ -54,10 +93,10 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsig
     while(member && !found) {
         lado = get_content(member);
         if(lado->y->iteracion != i && (lado->c - lado->f) > 0) {
-            //Si no lo visite esta iteracion y hay capacidad
             (lado->y)->distancia = (lado->x)->distancia + 1;
             (lado->y)->iteracion = i;
             list = list_add(list, lado->y);
+            lado->x->vecinos_posibles = buscar_vecinos_posibles(lado->x);
             if(comparar_vertice(resumidero, lado->y)) {
                 found = true;
             }
@@ -72,6 +111,7 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsig
             (lado->x)->distancia = (lado->y)->distancia + 1;
             (lado->x)->iteracion = i;
             list = list_add(list, lado->y);
+            lado->y->vecinos_posibles = buscar_vecinos_posibles(lado->y);
             if(comparar_vertice(resumidero, lado->x)) {
                 found = true;
             }
