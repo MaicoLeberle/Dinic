@@ -9,6 +9,7 @@ VerticeP crear_vertice(u64 nombre) {
         new->vecinos_backward = list_create();
         new->distancia = 0;
         new->iteracion = 0;
+        new->aristas_disponibles = list_create();
     }
     
     return new;
@@ -45,11 +46,17 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, unsigned int i) {
    
     member_t member = list_get_first(v->vecinos_forward);
     LadoP lado = NULL;
-   
+    
+    if(v->iteracion != i) {
+        free(v->aristas_disponibles);
+        v->aristas_disponibles = list_create();
+    }
+    
     while(member) {
         lado = get_content(member);
-        if(lado->y->iteracion != i && (lado->c - lado->f) > 0) {
+        if(lado->y->iteracion != i && lado->c > 0) {
             //Si no lo visite esta iteracion y hay capacidad
+            v->aristas_disponibles = list_add(v->aristas_disponibles, lado);
             (lado->y)->distancia = (lado->x)->distancia + 1;
             (lado->y)->iteracion = i;
             list = list_add(list, lado->y);
@@ -61,9 +68,11 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, unsigned int i) {
         lado = get_content(member);
         if(lado->y->iteracion != i && lado->f > 0) {
             //Si no lo visite esta iteracion y hay flujo
+            v->aristas_disponibles = list_add(v->aristas_disponibles, lado);
             (lado->x)->distancia = (lado->y)->distancia + 1;
             (lado->x)->iteracion = i;
             list = list_add(list, lado->y);
+            
         }
         member = list_next(member);
     }

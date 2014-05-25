@@ -164,27 +164,14 @@ Lado LeerUnLado() {
 }
 
 int CargarUnLado(DovahkiinP D, LadoP L) {
-    /*
-        PY: Me parece ineficiente lo del if. Por lo que habia entendido el grafo
-        no tenia ciclos por lo cual comparar x e y en un lado no tiene sentido
-        (pero esto no es tan grave es una sola operacion). Lo que si me parece
-        grave es checkear que no se haya agregado 2 veces el mismo lado , pueden
-        haber miles de vertices y seria un desastre checkear para cado lado si ya 
-        existe (o sea buscar en 4 listas por cada lado...).
-        El ano pasado no daban 2 veces el mismo lado por stdin.
-        
-        De toda forma no se tienen que hacer esos 4 checkeos. A lo sumo tienen que ser
-        2 (pues que si se agrega el lado xy entonces xy va a estar en la cola forward de x
-        y la cola backward de y, si no esta en la cola forward de x entonces tambien no esta
-        en la cola backward de y).
-    */
     assert(D);
     assert(L);
     
     VerticeP x = (VerticeP)list_search(D->data, L->x, &comparar_vertice);
     VerticeP y = (VerticeP)list_search(D->data, L->y, &comparar_vertice);
     member_t new = member_create(L);
-    int result;
+    member_t new_2 = member_create(L);
+    int result = 0;
     
     if(x == NULL) {
         D->data = list_add(D->data, L->x);
@@ -209,7 +196,7 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
         && !list_search(L->y->vecinos_forward, aux, &comparar_lados)) {
         /*  Aquí se comprobó que el lado no es un loop, que no está ya registrado, y que el lado inverso no existe. */
         L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
-        L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new);
+        L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new_2);
         result =  1;
     } else {
         result = 0;
@@ -248,10 +235,10 @@ int ActualizarDistancias(DovahkiinP D) {
         D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->iteracion);
         temp = list_next(temp);
     }
-    if(comparar_vertice(get_content(temp), D->resumidero)) {
+    if(temp && comparar_vertice(get_content(temp), D->resumidero)) {
         /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
-        D->temp = list_destroy_keep_members(D->temp);
         result = 1;
+        D->temp = list_destroy_keep_members(D->temp);
     }
     return result;
 }

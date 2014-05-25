@@ -6,8 +6,8 @@
 
 struct Vertice {
 	u64 nombre;
-	list_t vecinos_forward;
-	list_t  vecinos_backward;
+	list_t vecinos_forward, vecinos_backward;
+	list_t aristas_disponibles;
 	unsigned int distancia, iteracion;
 };
 
