@@ -197,25 +197,33 @@ member_t list_previous(member_t member) {
     return member->previous;
 }
 
-member_t remove_last(list_t list, void *function_destroy(void*)) {
+list_t remove_last(list_t list, void *function_destroy(void*)) {
     assert(list);
+    assert(!list_empty(list));
 
+    member_t temp = list->last;
+    list->last = list->last->previous
+    
     if((list->last)->member) {
         function_destroy((list->last)->member);
     }
     free(list->last);
-    list->last = NULL;
+    
+    list->length -= 1;
 
     return NULL;
 }
 
-member_t remove_last_keep_content(list_t list) {
+list_t remove_last_keep_content(list_t list) {
     assert(list);
+    assert(!list_empty(list));
+    
+    member_t temp = list->last;
+    list->last = list->last->previous;
 
-    if(list->last) {
-        free(list->last);
-        list->last = NULL;
-    }
-
+    free(temp);
+    
+    list->length -= 1; 
+     
     return NULL;
 }
