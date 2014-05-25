@@ -14,7 +14,11 @@ int main(void) {
     }
     FijarFuente(dragon, (u64)0);
     FijarResumidero(dragon, (u64)1);
-    ActualizarDistancias(dragon);
+    while(ActualizarDistancias(dragon)) {
+        if(BusquedaCaminoAumentante(dragon)) {
+            AumentarFlujo(dragon);
+        }
+    }
     DestruirDovahkiin(dragon);
     
     return 1;
