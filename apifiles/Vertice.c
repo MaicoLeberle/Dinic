@@ -48,7 +48,7 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsig
     assert(v);
    
     member_t member = list_get_first(v->vecinos_forward);
-    LadoP lado = get_content(member);
+    LadoP lado = NULL;
     bool found = false;
     
     while(member && !found) {
