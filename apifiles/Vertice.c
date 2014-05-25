@@ -54,7 +54,7 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, unsigned int i) {
     
     while(member) {
         lado = get_content(member);
-        if(lado->y->iteracion != i && lado->c > 0) {
+        if(lado->y->iteracion != i && (lado->c - lado->f) > 0) {
             //Si no lo visite esta iteracion y hay capacidad
             v->aristas_disponibles = list_add(v->aristas_disponibles, lado);
             (lado->y)->distancia = (lado->x)->distancia + 1;
