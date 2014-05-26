@@ -19,8 +19,8 @@ int main(void) {
             AumentarFlujo(D);
         }
     }
-    ImprimirValorFlujo(dragon);
-    ImprimirCorte(dragon);
+    ImprimirValorFlujo(D);
+    ImprimirCorte(D);
     DestruirDovahkiin(D);
     
     return 1;
