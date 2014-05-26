@@ -517,7 +517,7 @@ void ImprimirCorte(DovahkiinP D) {
     assert(D);
     assert(D->temp);
     
-    member_t member = list_next(list_get_first(D->temp));
+    member_t member = list_get_first(D->temp);
     VerticeP v_actual = NULL;
     u64 capacidad = 0;
     member_t member_l = NULL;
