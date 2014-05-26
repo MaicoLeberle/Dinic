@@ -26,10 +26,8 @@ struct DovahkiinSt {
 	/*	En flujo se guarda el valor del flujo hasta el momento. */
 	u64 flujo;
 	/*	data es la lista de vértices, junto con toda su información asociada.
-		temp se utiliza para establecer los niveles de BFS en ActualizarDistancias.
-		corte se utiliza para almacenar el corte si no se llega al resumidero en
-		ActualizarDistancias.*/
-	list_t data, temp, corte;
+		temp se utiliza para establecer los niveles de BFS en ActualizarDistancias. */
+	list_t data, temp;
 	/*	iteracion es la manera que tuvimos de evitar tener que actualizar las distancias
 		de todos los vértices en cada ActualizarDistancias: sólo se acepta como válida a
 		la distancia v->distancia, de un VerticeP v, si v->iteracion es igual al valor

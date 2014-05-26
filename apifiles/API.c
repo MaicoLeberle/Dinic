@@ -22,7 +22,6 @@ DovahkiinP NuevoDovahkiin() {
         new->flujo = 0;
         new->data = list_create();
         new->temp = list_create();
-        new->corte = list_create();
         new->iteracion = 0;
         new->flujo_maximal = false;
     }
@@ -40,11 +39,6 @@ int DestruirDovahkiin(DovahkiinP D) {
     }
     if(D->temp) {
         D->temp = list_destroy_keep_members(D->temp); 
-    }
-    if(D->corte) {
-        /*  Puesto que D->corte es sólo una copia de D->temp, la memoria asociada a D->corte
-            ya fue liberada. */
-        D->corte = NULL;
     }
     free(D);
     D = NULL;
@@ -310,15 +304,13 @@ int ActualizarDistancias(DovahkiinP D) {
         temp = list_next(temp);
     }
     if(temp && comparar_vertice(get_content(temp), D->resumidero)) {
-        /*  Se encontró un camino al resumidero, por lo que no se tiene un corte en D->corte. 
+        /*  Se encontró un camino al resumidero, por lo que no se tiene un corte en D->temp. 
             Luego, se lo debe limpiar. */
         result = 1;
         D->temp = list_destroy_keep_members(D->temp);
     }
     else {
-        /*  En D->temp se tiene un corte minimal, y D contiene un flujo maximal en el network.
-            Por comodidad y comprensión del código, se asigna D->corte := D->temp */
-        D->corte = D->temp;
+        /*  En D->temp se tiene un corte minimal, y D contiene un flujo maximal en el network. */
         D->flujo_maximal = true;
     }
     return result;
@@ -523,17 +515,13 @@ void ImprimirValorFlujo(DovahkiinP D) {
     devuelto un valor de 0, pues no hubo modo de llegar al resumidero desde la fuente. */
 void ImprimirCorte(DovahkiinP D) {
     assert(D);
-    assert(D->corte);
+    assert(D->temp);
     
-    member_t member = list_next(list_get_first(D->corte));
+    member_t member = list_next(list_get_first(D->temp));
     VerticeP v_actual = NULL;
     u64 capacidad = 0;
     member_t member_l = NULL;
     LadoP lado = NULL;
-    
-    if(!D->temp) {
-        D->temp = list_create();
-    }
     
     printf("\nCorte Minimal: S = {s");
     /*  El siguiente bucle obtiene la capacidad del corte, constituida ésta por la suma de las
@@ -545,7 +533,7 @@ void ImprimirCorte(DovahkiinP D) {
         while(member_l) {
             /*  Se itera sobre cada uno de los lados del vértice v_actual. */
             lado = get_content(member_l);
-            if(!list_search(D->corte, lado->y, &comparar_lados)) {
+            if(!list_search(D->temp, lado->y, &comparar_lados)) {
                 capacidad += lado->c;
             }
             member_l = list_next(member_l);
