@@ -40,7 +40,7 @@ bool comparar_vertice(void *x, void *y) {
     return(v_1->nombre == v_2->nombre);
 }
 
-list_t buscar_vecinos_posibles(VerticeP v, unsigned int i) {
+list_t buscar_vecinos_posibles(VerticeP v) {
     /*
         Agrega en v->vecinos_posibles todos los vecinos
         que cumplen :
@@ -49,8 +49,7 @@ list_t buscar_vecinos_posibles(VerticeP v, unsigned int i) {
         -Si es backward entonces temp->f > 0
     */
     assert(v);
-    i += 1;
-    i -= 1;
+    
     member_t member = list_get_first(v->vecinos_forward);
     LadoP temp = NULL;
     
@@ -113,6 +112,6 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsig
         }
         member = list_next(member);
     }
-    v->vecinos_posibles = buscar_vecinos_posibles(v, i);
+    v->vecinos_posibles = buscar_vecinos_posibles(v);
     return list;
 }

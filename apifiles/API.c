@@ -217,13 +217,13 @@ int ActualizarDistancias(DovahkiinP D) {
         D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->resumidero,  D->iteracion);
         temp = list_next(temp);
     }
-    D->corte = D->temp;
+    D->corte = list_copy(D->temp);
     free(D->temp);
     D->temp = NULL;
     if(temp && comparar_vertice(get_content(temp), D->resumidero)) {
         /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
         result = 1;
-        D->corte = list_destroy_keep_members(D->temp);
+        D->corte = list_destroy_keep_members(D->corte);
     }
     else {
         D->flujo_maximal = true;
@@ -393,11 +393,13 @@ void ImprimirFlujo(DovahkiinP D){
 }
 
 void ImprimirValorFlujo(DovahkiinP D) {
-    u64 f = ValorFlujo(D);
-    if (D->temp){
-        printf("Valor del flujo Maximal: \t%" PRIu64"\n", f);
-    }else{
-        printf("Valor del flujo (no maximal):\t%" PRIu64"\n", f);
+    assert(D);
+    
+    if (D->flujo_maximal){
+        printf("Valor del flujo Maximal: %" PRIu64, D->flujo);
+    }
+    else {
+        printf("Valor del flujo (no maximal): %" PRIu64, D->flujo);
     }
 }
 
@@ -415,7 +417,7 @@ void ImprimirCorte(DovahkiinP D) {
         D->temp = list_create();
     }
     
-    printf("Corte Minimal:\tS = {");
+    printf("Corte Minimal: S = {");
     
     while(member) {
         v_actual = get_content(member);
@@ -439,7 +441,7 @@ void ImprimirCorte(DovahkiinP D) {
         member = list_next(member);
     }
     
-    printf("Capacidad:\t%" PRIu64, capacidad);
+    printf("Capacidad: %" PRIu64, capacidad);
     
 }
 

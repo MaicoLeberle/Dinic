@@ -43,6 +43,24 @@ list_t list_destroy(list_t list, void *function_destroy(void*)) {
     return NULL;
 }
 
+list_t list_copy(list_t list) {
+    assert(list);
+    
+    list_t copy = list_create();
+    member_t member = list->first, new = NULL;
+    void *content = NULL;
+    
+    while(member) {
+        content = get_content(member);
+        new = member_create(content);
+        copy = list_add(copy, new);
+        member = member->next;
+    }
+    
+    assert(list->length == copy->length);
+    return copy;
+}
+
 list_t list_destroy_keep_members(list_t list) {
     assert(list);
 
