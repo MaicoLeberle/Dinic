@@ -266,18 +266,24 @@ int Prepararse(DovahkiinP D) {
     return result;
 }
 
+/*  Actualiza la distancia de cada uno de los vértices internos del network, acorde a la distancia
+    desde la fuente.
+    Devuelve 1 si existe un camino de s a t, y 0 si no. */
 int ActualizarDistancias(DovahkiinP D) {
     /*
-        Hace una busqueda FF-BFS (forwards y los backwards
-        si lado->c - lado->f > 0 y no fue visitado entonces lo agrega (forwards)
-        si lado->f > 0 y no fue visitado lo agrega (backwards)
-        sino no agrega.
+        Hace una busqueda FF-BFS (de vecinos forward y backward)
+        Si lado->c - lado->f > 0 y no fue visitado, entonces lo agrega. Este es el caso para lados
+        forward.
+        Si lado->f > 0 y no fue visitado lo agrega. Este es el caso para lados backwards.
+        En caso contrario, no agrega nada.
     */
     assert(D);
  
     member_t temp = NULL;
     int result = 0;
-   
+    
+    /*  Recordar que este atributo servirá para indicar qué niveles de BFS son aceptados como 
+        válidos. */
     D->iteracion += 1;
    
     if(!D->temp) {
@@ -287,40 +293,50 @@ int ActualizarDistancias(DovahkiinP D) {
     D->fuente->iteracion = D->iteracion;
     D->temp = list_add(D->temp, D->fuente);
     temp = list_get_first(D->temp);
-     
+    
+    /*  Mientras que haya elementos en la lista y no se haya llegado al resumidero. */
     while(temp && !comparar_vertice(get_content(temp), D->resumidero)) {
+        /*  Se deben agregar los vecinos de get_content(temp), lo cual se hace en el módulo 
+            Vertice. */
         D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->resumidero,  D->iteracion);
+        /*  Se avanza en la lista. */
         temp = list_next(temp);
     }
+    /*  Se hace una copia de la lista de vértices utilizados cuando se intentaron establecer
+        los níveles BFS de cada vértice, limpiando D->temp, pues ésta es sólo una lista 
+        auxiliar. */
     D->corte = list_copy(D->temp);
     free(D->temp);
     D->temp = NULL;
     if(temp && comparar_vertice(get_content(temp), D->resumidero)) {
-        /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
+        /*  Se encontró un camino al resumidero, por lo que no se tiene un corte en D->corte. 
+            Luego, se lo debe limpiar. */
         result = 1;
         D->corte = list_destroy_keep_members(D->corte);
     }
     else {
+        /*  En D->corte se tiene un corte minimal, y D contiene un flujo maximal en el network. */
         D->flujo_maximal = true;
     }
     return result;
 }
 
+/*  Esta función es utilizada por BusquedaCaminoAumentante, la cual implementa una búsqueda FF-DFS 
+    desde la fuente al resumidero, respetando las condiciones que establece el algoritmo de Dinic.
+    Actualiza los datos del primer vértice posible después de x(por ser DFS), modificando el ancestro
+    de dicho vértice, el flujo temporal de éste y se indica si es encontrado en el camino de la fuente
+    al resumidero a través de un lado forward o backward. */
 VerticeP avanzar(VerticeP x, u64 *flujo) {
-    /*
-        Principalmente actualiza los datos del siguiente vertice.
-        Actualiza:
-        -el ancestro de next
-        -el temp_flujo de next
-        -y avisa si es forward
-    */
     assert(x);
     
     VerticeP next = x;
     LadoP lado = get_content(list_get_first(x->vecinos_posibles));
     bool posible = false;
+
     if(comparar_vertice(x, lado->x)) {
+        /*  El vértice de salida es el propio x. */
         if(lado->c - lado->f) {
+            /*  El lado no está saturado. */
             posible = true;
             next = lado->y;
             *flujo = min(*flujo, lado->c - lado->f);
@@ -328,7 +344,9 @@ VerticeP avanzar(VerticeP x, u64 *flujo) {
         }
     }
     else {
+        /*  El vértice de salida no es x, por lo que se llega a x a través de un lado backward. */
         if(lado->f) {
+            /*  Se ha enviado flujo por este lado. */
             posible = true;
             next = lado->x;
             *flujo = min(*flujo, lado->f);
@@ -345,13 +363,19 @@ VerticeP avanzar(VerticeP x, u64 *flujo) {
             
     return next;
 }
-
+/*  Esta función se utiliza para indicar que x no es el comienzo de un subcamino al resumidero.
+    Simplemente elimina el primer vértice de vecinos posibles del ancestro de x; i.e., x.
+    Devuelve el ancestro de x, para que siga buscando desde allí. */
 VerticeP retroceder(VerticeP x) {
     assert(x);
     x->ancestro->vecinos_posibles = remove_first_keep_content(x->ancestro->vecinos_posibles);
     return x->ancestro;
 }
 
+/*  Esta función obtiene un camino aumentante desde la fuente al resumidero de D respetando
+    los niveles establecidos en ActualizarDistancias, en el sentido de que sólo pueden elegirse
+    caminos X1,...,Xn tales que nivel(Xi) = nivel(Xi) + 1, para todo i entre 1 y n-1, X1 es la
+    fuente y Xn el resumidero. */
 int BusquedaCaminoAumentante(DovahkiinP D) {
     /*
         Buscar un camino hasta t desde s.
