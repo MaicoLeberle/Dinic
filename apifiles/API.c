@@ -426,9 +426,9 @@ u64 ValorFlujo(DovahkiinP D) {
 void ImprimirValorFlujo(DovahkiinP D) {
     u64 f = ValorFlujo(D);
     if (D->temp){
-        printf("Valor del flujo Maximal: \t%" PRIu64, f);
+        printf("Valor del flujo Maximal: \t%" PRIu64"\n", f);
     }else{
-        printf("Valor del flujo (no maximal):\t%" PRIu64, f);
+        printf("Valor del flujo (no maximal):\t%" PRIu64"\n", f);
     }
 }
 
@@ -436,12 +436,16 @@ void ImprimirValorFlujo(DovahkiinP D) {
 /*  Precondición: Se corrió ActualizarDistancia y no se llegó al resumidero. El corte minimal
     está en D->temp. */
 void ImprimirCorte(DovahkiinP D) {
-    member_t temp = list_get_first(D->temp);
+    assert(D->temp);
+
+    member_t temp = list_next(list_get_first(D->temp));
     printf("Corte Minimal:\tS = {s");
     while(temp) {
         printf(",%"PRIu64, ((VerticeP)(get_content(temp)))->nombre);
+        temp = list_next(temp);
     }
-    printf("\nCapacidad:\t%" PRIu64, ValorFlujo(D));
+    printf("}\n");
+    printf("Capacidad:\t%" PRIu64"\n", ValorFlujo(D));
 }
 
 u64 min(u64 a, u64 b) {
