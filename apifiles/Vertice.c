@@ -26,6 +26,7 @@ void *destruir_vertice(void *ptr) {
         vertice->vecinos_forward = list_destroy(vertice->vecinos_forward, &destruir_lado);
     }
     vertice->vecinos_backward = list_destroy_keep_members(vertice->vecinos_backward);
+    vertice->vecinos_posibles = list_destroy_keep_members(vertice->vecinos_posibles);
     free(vertice);
     
     return NULL;
