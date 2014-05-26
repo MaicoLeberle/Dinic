@@ -393,13 +393,11 @@ void ImprimirFlujo(DovahkiinP D){
 }
 
 void ImprimirValorFlujo(DovahkiinP D) {
-    assert(D);
-    
-    if (D->flujo_maximal){
-        printf("Valor del flujo Maximal: %" PRIu64, D->flujo);
-    }
-    else {
-        printf("Valor del flujo (no maximal): %" PRIu64, D->flujo);
+    u64 f = ValorFlujo(D);
+    if (D->temp){
+        printf("Valor del flujo Maximal: \t%" PRIu64"\n", f);
+    }else{
+        printf("Valor del flujo (no maximal):\t%" PRIu64"\n", f);
     }
 }
 
@@ -417,7 +415,7 @@ void ImprimirCorte(DovahkiinP D) {
         D->temp = list_create();
     }
     
-    printf("Corte Minimal: S = {");
+    printf("Corte Minimal:\tS = {");
     
     while(member) {
         v_actual = get_content(member);
@@ -441,7 +439,7 @@ void ImprimirCorte(DovahkiinP D) {
         member = list_next(member);
     }
     
-    printf("Capacidad: %" PRIu64, capacidad);
+    printf("Capacidad:\t%" PRIu64, capacidad);
     
 }
 
