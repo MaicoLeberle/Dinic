@@ -42,7 +42,9 @@ int DestruirDovahkiin(DovahkiinP D) {
         D->temp = list_destroy_keep_members(D->temp); 
     }
     if(D->corte) {
-        D->corte = list_destroy_keep_members(D->corte);
+        /*  Puesto que D->corte es sólo una copia de D->temp, la memoria asociada a D->corte
+            ya fue liberada. */
+        D->corte = NULL;
     }
     free(D);
     D = NULL;
@@ -307,20 +309,16 @@ int ActualizarDistancias(DovahkiinP D) {
         /*  Se avanza en la lista. */
         temp = list_next(temp);
     }
-    /*  Se hace una copia de la lista de vértices utilizados cuando se intentaron establecer
-        los níveles BFS de cada vértice, limpiando D->temp, pues ésta es sólo una lista 
-        auxiliar. */
-    D->corte = list_copy(D->temp);
-    free(D->temp);
-    D->temp = NULL;
     if(temp && comparar_vertice(get_content(temp), D->resumidero)) {
         /*  Se encontró un camino al resumidero, por lo que no se tiene un corte en D->corte. 
             Luego, se lo debe limpiar. */
         result = 1;
-        D->corte = list_destroy_keep_members(D->corte);
+        D->temp = list_destroy_keep_members(D->temp);
     }
     else {
-        /*  En D->corte se tiene un corte minimal, y D contiene un flujo maximal en el network. */
+        /*  En D->temp se tiene un corte minimal, y D contiene un flujo maximal en el network.
+            Por comodidad y comprensión del código, se asigna D->corte := D->temp */
+        D->corte = D->temp;
         D->flujo_maximal = true;
     }
     return result;
@@ -527,7 +525,7 @@ void ImprimirCorte(DovahkiinP D) {
     assert(D);
     assert(D->corte);
     
-    member_t member = list_get_first(D->corte);
+    member_t member = list_next(list_get_first(D->corte));
     VerticeP v_actual = NULL;
     u64 capacidad = 0;
     member_t member_l = NULL;
@@ -537,8 +535,7 @@ void ImprimirCorte(DovahkiinP D) {
         D->temp = list_create();
     }
     
-    printf("\nCorte Minimal: S = {");
-    
+    printf("\nCorte Minimal: S = {s");
     /*  El siguiente bucle obtiene la capacidad del corte, constituida ésta por la suma de las
         capacidades en los lados que van desde un vértice del corte a un vértice fuera del mismo. */
     while(member) {
@@ -553,18 +550,10 @@ void ImprimirCorte(DovahkiinP D) {
             }
             member_l = list_next(member_l);
         }
-        if(comparar_vertice(v_actual, D->fuente)) {
-            printf("s,");
-        }
-        else if(comparar_vertice(v_actual, D->resumidero)) {
-            printf("t}\n");
-        }
-        else {
-            printf("%" PRIu64 ",", v_actual->nombre);
-        }
+        printf(", %" PRIu64, v_actual->nombre);
         member = list_next(member);
     }
-    
-    printf("Capacidad: %" PRIu64, capacidad);
+    printf("}");
+    printf("\nCapacidad: %" PRIu64, capacidad);
     
 }

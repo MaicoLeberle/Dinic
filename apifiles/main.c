@@ -21,6 +21,7 @@ int main(void) {
     }
     ImprimirValorFlujo(D);
     ImprimirCorte(D);
+    printf("\n");
     DestruirDovahkiin(D);
     
     return 1;
