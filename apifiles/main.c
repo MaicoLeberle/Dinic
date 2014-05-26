@@ -19,8 +19,7 @@ int main(void) {
             AumentarFlujo(dragon);
         }
     }
-    ImprimirValorFlujo(dragon);
-    ImprimirCorte(dragon);
-    // DestruirDovahkiin(dragon);
+    //DestruirDovahkiin(dragon);
+    
     return 1;
 }
