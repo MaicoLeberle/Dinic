@@ -2,24 +2,24 @@
 
 int main(void) {
 
-    DovahkiinP dragon = NULL;
+    DovahkiinP D = NULL;
     Lado lado;
     
-    dragon = NuevoDovahkiin();
+    D = NuevoDovahkiin();
     lado = LeerUnLado();
     
     while(lado != LadoNulo) {
-        CargarUnLado(dragon, lado);
+        CargarUnLado(D, lado);
         lado = LeerUnLado();
     }
-    FijarFuente(dragon, (u64)0);
-    FijarResumidero(dragon, (u64)1);
-    while(ActualizarDistancias(dragon)) {
-        if(BusquedaCaminoAumentante(dragon)) {
-            AumentarFlujo(dragon);
+    FijarFuente(D, (u64)0);
+    FijarResumidero(D, (u64)1);
+    while(ActualizarDistancias(D)) {
+        while(BusquedaCaminoAumentante(D)) {
+            AumentarFlujo(D);
         }
     }
-    //DestruirDovahkiin(dragon);
+    DestruirDovahkiin(D);
     
     return 1;
 }

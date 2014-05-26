@@ -1,8 +1,6 @@
 #include "API.h"
 
-#define MAX_SIZE 21 //2^64 -> 21 campos (+1 por \0)
-#define FORWARD 1
-#define BACKWARD 0
+#define MAX_SIZE 50 //No quiero tener problemas con esto , doy mas espacio de lo que se necesita
 
 u64 min(u64 a, u64 b);
 
@@ -15,7 +13,9 @@ DovahkiinP NuevoDovahkiin() {
         new->flujo = 0;
         new->data = list_create();
         new->temp = list_create();
+        new->corte = list_create();
         new->iteracion = 0;
+        new->flujo_maximal = false;
     }
     
     return new;
@@ -28,8 +28,6 @@ int DestruirDovahkiin(DovahkiinP D) {
         D->data = list_destroy(D->data, &destruir_vertice);
     }
     if(D->temp) {
-        /*  Sólo es necesario destruir la lista, pues los vértices ya se han eliminado
-            al destruir D->data. */
         D->temp = list_destroy_keep_members(D->temp); 
     }
     free(D);
@@ -47,16 +45,13 @@ void FijarFuente(DovahkiinP D, u64 x) {
         D->fuente = check;
         v = destruir_vertice(v);
     } else {
+        D->data = list_add(D->data, v);
         D->fuente = v;
     }
 }
 
 void FijarResumidero(DovahkiinP D, u64 x) {
     assert(D);
-    /* Con una Main traicionera podrian fijarse muchas fuentes. deberia fijar 1 sola fuente y no mas */
-    //RP de PY : El main lo hacemos nosotros por lo cual no hay trampa pero entiendo la idea.
-    //Lo que si se podria hacer es prohibir cambiar la fuente y el resumidero si ya estamos
-    //buscando un camino (tipo un booleano en dovakin) pero es un detalle menor creo.
     
     VerticeP v = crear_vertice(x);
     VerticeP check = list_search(D->data, v, &comparar_vertice);
@@ -65,6 +60,7 @@ void FijarResumidero(DovahkiinP D, u64 x) {
         D->resumidero = check;
         v = destruir_vertice(v);
     } else {
+        D->data = list_add(D->data, v);
         D->resumidero = v;
     }
 }
@@ -135,7 +131,7 @@ Lado LeerUnLado() {
     char *tokenx, *tokeny, *tokenc;
     VerticeP x = NULL;
     VerticeP y = NULL;
-    LadoP new = NULL;
+    LadoP new = LadoNulo;
     
     if(fgets(buffer, MAX_SIZE, stdin) != NULL) {
         tokenx = strtok(buffer, " ");
@@ -145,11 +141,6 @@ Lado LeerUnLado() {
             x = crear_vertice(atoi64(tokenx));
             y = crear_vertice(atoi64(tokeny));
             new = crear_lado(x, y, atoi64(tokenc));
-        }
-        else {
-            /*  "free(new);" significa "free(NULL);", pues "LadoP new = NULL;", 
-                lo cual no es necesario realizar. */
-            new = LadoNulo;
         }
     }
     free(buffer);
@@ -181,21 +172,11 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
         L->y = destruir_vertice(L->y);
         L->y = y;
     }
-    /*  aux es el lado inverso de L. */
-    Lado aux = crear_lado(L->y, L->x, L->c);
-    if(!comparar_vertice(L->x, L->y) 
-        && !list_search(L->x->vecinos_forward, L, &comparar_lados) 
-        && !list_search(L->x->vecinos_backward, aux, &comparar_lados) 
-        && !list_search(L->y->vecinos_backward, L, &comparar_lados) 
-        && !list_search(L->y->vecinos_forward, aux, &comparar_lados)) {
-        /*  Aquí se comprobó que el lado no es un loop, que no está ya registrado, y que el lado inverso no existe. */
-        L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
-        L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new_2);
-        result =  1;
-    } else {
-        result = 0;
-    }
-    aux = destruir_lado(aux);
+    
+    L->x->vecinos_forward = list_direct_add(L->x->vecinos_forward, new);
+    L->y->vecinos_backward = list_direct_add(L->y->vecinos_backward, new_2);
+    result =  1;
+    
     return result;
 }
 
@@ -228,18 +209,24 @@ int ActualizarDistancias(DovahkiinP D) {
         D->temp = list_create();
     }
    
-    D->temp = list_add(D->temp, D->fuente);//Destruir member_t
     D->fuente->iteracion = D->iteracion;
+    D->temp = list_add(D->temp, D->fuente);
     temp = list_get_first(D->temp);
      
     while(temp && !comparar_vertice(get_content(temp), D->resumidero)) {
         D->temp = add_neighboor_to_list(D->temp, get_content(temp), D->resumidero,  D->iteracion);
         temp = list_next(temp);
     }
+    D->corte = D->temp;
+    free(D->temp);
+    D->temp = NULL;
     if(temp && comparar_vertice(get_content(temp), D->resumidero)) {
         /*  Se encontró un camino al resumidero, por lo que D->temp se puede limpiar. */
         result = 1;
-        D->temp = list_destroy_keep_members(D->temp);
+        D->corte = list_destroy_keep_members(D->temp);
+    }
+    else {
+        D->flujo_maximal = true;
     }
     return result;
 }
@@ -357,7 +344,7 @@ u64 AumentarFlujo(DovahkiinP D) {
 u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     assert(D);
     
-    VerticeP vertice_actual = D->resumidero, next = NULL;
+    VerticeP vertice_actual = D->resumidero->ancestro, next = NULL;
     u64 flujo = AumentarFlujo(D);
     
     printf("t;");
@@ -377,71 +364,85 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     return flujo;
 }
 
-
-/*  La estrategia a seguir en la siguiente función es sencilla: se recorre cada uno de los vértices
-    y se imprimen los lados que comiencen en él (i.e., los lados en vecinos_forward). Esto es suficiente
-    y correcto para lograr el acometido de ImprimirFlujo, pues cada lado ingresado está en 
-    vecinos_forward de algún vértice y no se repite en ninguna otra lista vecinos_forward (evidentemente,
-    sí se repiten en alguna lista vecinos_backward de algún vértice). */
 void ImprimirFlujo(DovahkiinP D){
-    member_t temp_vertice;
-    member_t temp_lado;
-    Lado lado;
-    if (!(list_empty(D->temp))) {
-        /*  Al llamar ActualizarDistancias no se limpió la lista D->temp porque no se llegó al resumidero. 
-            Luego, el flujo es maximal y el corte es minimal. */
+    assert(D);
+    
+    member_t member_v = list_get_first(D->data);
+    VerticeP v_actual = NULL;
+    member_t member_l = NULL;
+    LadoP lado = NULL;
+    
+    if (D->flujo_maximal) {
         printf("Flujo Maximal:\n");
-    } else {
+    }
+    else {
         printf("Flujo (no maximal):\n");
     }
-
-    temp_vertice = list_get_first(D->data);
-    while(temp_vertice) {
-        temp_lado = list_get_first(((VerticeP)(get_content(temp_vertice)))->vecinos_forward);
-        while(temp_lado) {
-            lado = (Lado)(get_content(temp_lado));
-            printf("Lado %"PRIu64", %"PRIu64":\t%"PRIu64"\n", (lado->x)->nombre, (lado->y)->nombre, lado->f);
-            temp_lado = list_next(temp_lado);
+    
+    
+    while(member_v) {
+        v_actual = get_content(member_v);
+        member_l = list_get_first(v_actual->vecinos_forward);
+        while(member_l) {
+            lado = get_content(member_l);
+            printf("Lado %" PRIu64 ",%" PRIu64 ": %" PRIu64 "\n", lado->x->nombre, lado->y->nombre, lado->f);
+            member_l = list_next(member_l);
         }
-
-        temp_vertice = list_next(temp_vertice);
+        member_v = list_next(member_v);
     }
 }
 
-
-u64 ValorFlujo(DovahkiinP D) {
-    member_t aux;
-    Lado lado;
-    u64 f = 0;
-
-    aux = list_get_first((D->fuente)->vecinos_forward);
-    while(aux){
-        lado = (Lado) get_content(aux);
-        f += lado->f;
-        aux = list_next(aux);
-    }
-    return f;
-}
-/*   */
 void ImprimirValorFlujo(DovahkiinP D) {
-    u64 f = ValorFlujo(D);
-    if (D->temp){
-        printf("Valor del flujo Maximal: \t%" PRIu64, f);
-    }else{
-        printf("Valor del flujo (no maximal):\t%" PRIu64, f);
+    assert(D);
+    
+    if (D->flujo_maximal){
+        printf("Valor del flujo Maximal: %" PRIu64, D->flujo);
+    }
+    else {
+        printf("Valor del flujo (no maximal): %" PRIu64, D->flujo);
     }
 }
 
-
-/*  Precondición: Se corrió ActualizarDistancia y no se llegó al resumidero. El corte minimal
-    está en D->temp. */
 void ImprimirCorte(DovahkiinP D) {
-    member_t temp = list_get_first(D->temp);
-    printf("Corte Minimal:\tS = {s");
-    while(temp) {
-        printf(",%"PRIu64, ((VerticeP)(get_content(temp)))->nombre);
+    assert(D);
+    assert(D->corte);
+    
+    member_t member = list_get_first(D->corte);
+    VerticeP v_actual = NULL;
+    u64 capacidad = 0;
+    member_t member_l = NULL;
+    LadoP lado = NULL;
+    
+    if(!D->temp) {
+        D->temp = list_create();
     }
-    printf("\nCapacidad:\t%" PRIu64, ValorFlujo(D));
+    
+    printf("Corte Minimal: S = {");
+    
+    while(member) {
+        v_actual = get_content(member);
+        member_l = list_get_first(v_actual->vecinos_forward);
+        while(member_l) {
+            lado = get_content(member_l);
+            if(!list_search(D->corte, lado->y, &comparar_lados)) {
+                capacidad += lado->c;
+            }
+            member_l = list_next(member_l);
+        }
+        if(comparar_vertice(v_actual, D->fuente)) {
+            printf("s,");
+        }
+        else if(comparar_vertice(v_actual, D->resumidero)) {
+            printf("t}\n");
+        }
+        else {
+            printf("%" PRIu64 ",", v_actual->nombre);
+        }
+        member = list_next(member);
+    }
+    
+    printf("Capacidad: %" PRIu64, capacidad);
+    
 }
 
 u64 min(u64 a, u64 b) {

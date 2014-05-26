@@ -25,9 +25,6 @@ void *destruir_vertice(void *ptr) {
     if(vertice->vecinos_forward) {
         vertice->vecinos_forward = list_destroy(vertice->vecinos_forward, &destruir_lado);
     }
-    /*  Recordar que todos los lados están presentes entre todos los vecinos_forward de los vértices
-        y están espejados entre todos los vecinos_backward de los vértices, es por eso que no se deben
-        eliminar en este punto, ya que ya fueorn eliminados. */
     vertice->vecinos_backward = list_destroy_keep_members(vertice->vecinos_backward);
     free(vertice);
     
@@ -43,7 +40,7 @@ bool comparar_vertice(void *x, void *y) {
     return(v_1->nombre == v_2->nombre);
 }
 
-list_t buscar_vecinos_posibles(VerticeP v) {
+list_t buscar_vecinos_posibles(VerticeP v, unsigned int i) {
     /*
         Agrega en v->vecinos_posibles todos los vecinos
         que cumplen :
@@ -52,7 +49,8 @@ list_t buscar_vecinos_posibles(VerticeP v) {
         -Si es backward entonces temp->f > 0
     */
     assert(v);
-    
+    i += 1;
+    i -= 1;
     member_t member = list_get_first(v->vecinos_forward);
     LadoP temp = NULL;
     
@@ -93,10 +91,9 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsig
     while(member && !found) {
         lado = get_content(member);
         if(lado->y->iteracion != i && (lado->c - lado->f) > 0) {
-            (lado->y)->distancia = (lado->x)->distancia + 1;
-            (lado->y)->iteracion = i;
+            lado->y->distancia = lado->x->distancia + 1;
+            lado->y->iteracion = i;
             list = list_add(list, lado->y);
-            lado->x->vecinos_posibles = buscar_vecinos_posibles(lado->x);
             if(comparar_vertice(resumidero, lado->y)) {
                 found = true;
             }
@@ -106,17 +103,16 @@ list_t add_neighboor_to_list(list_t list, VerticeP v, VerticeP resumidero, unsig
     member = list_get_first(v->vecinos_backward);
     while(member && !found) {
         lado = get_content(member);
-        if(lado->y->iteracion != i && lado->f > 0) {
-            //Si no lo visite esta iteracion y hay flujo
-            (lado->x)->distancia = (lado->y)->distancia + 1;
-            (lado->x)->iteracion = i;
-            list = list_add(list, lado->y);
-            lado->y->vecinos_posibles = buscar_vecinos_posibles(lado->y);
+        if(lado->x->iteracion != i && lado->f > 0) {
+            lado->x->distancia = lado->y->distancia + 1;
+            lado->x->iteracion = i;
+            list = list_add(list, lado->x);
             if(comparar_vertice(resumidero, lado->x)) {
                 found = true;
             }
         }
         member = list_next(member);
     }
+    v->vecinos_posibles = buscar_vecinos_posibles(v, i);
     return list;
 }
