@@ -3,8 +3,11 @@
 #define MAX_SIZE 50 //No quiero tener problemas con esto , doy mas espacio de lo que se necesita
 
 
+/*  Función sencilla que calcula el mínimo entre 2 u64. */
+u64 min(u64 a, u64 b) {
+    return (a <= b ? a : b);
+}
 
-u64 min(u64 a, u64 b);
 
 /*  Crea y un nuevo Dovahkiin y devuelve un puntero (DovahkiinP) a éste en caso de que
     todo haya salido bien, o NULL en caso contrario. */
@@ -215,7 +218,9 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
     
     /*  Se deben buscar los vértices a los que asignárseles L en sus listas de vecinos 
         (forward o backward, según corresponda).
-        Además, se debe crear el nodo para cada una de las listas a modificar. */
+        Además, se debe crear el nodo para cada una de las listas a modificar. Deben
+        ser nodos distintos porque pertenecen a listas distintas, aunque su contenido sea
+        el mismo. */
     VerticeP x = (VerticeP)list_search(D->data, L->x, &comparar_vertice);
     VerticeP y = (VerticeP)list_search(D->data, L->y, &comparar_vertice);
     member_t new = member_create(L);
@@ -377,45 +382,46 @@ VerticeP retroceder(VerticeP x) {
     caminos X1,...,Xn tales que nivel(Xi) = nivel(Xi) + 1, para todo i entre 1 y n-1, X1 es la
     fuente y Xn el resumidero. */
 int BusquedaCaminoAumentante(DovahkiinP D) {
-    /*
-        Buscar un camino hasta t desde s.
-        
-        Si el vertice actual tiene aristas disponibles
-        entonces avanzar sino retroceder
-    */
     assert(D);
     
     int result = 0;
     VerticeP vertice_actual = D->fuente;
     bool continuar = true;
+    /*  INFINITY está definido en math.h. */
     u64 flujo = (u64)INFINITY;
     
     while(!comparar_vertice(D->resumidero, vertice_actual) && continuar) {
+        /*  Mientras que no se llegue al resumidero y no se acaben los caminos posibles por 
+            recorrer. */
         if(!list_empty(vertice_actual->vecinos_posibles)) {
+            /*  Si todavía hay vecinos que recorrer, avanzar. */
             vertice_actual = avanzar(vertice_actual, &flujo);
         }
         else if(!comparar_vertice(D->fuente, vertice_actual)) {
+            /*  Si no hay vecinos posibles, y no se llegó al resumidero, entonces retroceder. */
             vertice_actual = retroceder(vertice_actual);
         }
         else {
+            /*  Se llegó al resumidero, por lo que se debe frenar aquí la búsqueda. */
             continuar = false;
         }
     }
     if(comparar_vertice(D->resumidero, vertice_actual)) {
+        /*  La razón por la que se salío del bucle while es que se llegó al resumidero. */
         result = 1; 
     }
     
     return result;
 }
 
+/*  Aumenta el flujo según corresponda en cado uno de los lados involucrados en el camino aumentante
+    conseguido en la última llamada a BusquedaCaminoAumentante. De este modo, "aumenta" puede 
+    significar que se devuelve flujo en cierto lado si éste se usar en forma backward en el camino
+    aumentante.
+    La idea es básicamente partir desde el resumidero y buscar el ancestro de cada uno de los vértices
+    recursivamente hasta llegar a la fuente, modificando el flujo correspondientemente en los lados
+    involucrados. */
 u64 AumentarFlujo(DovahkiinP D) {
-    /*
-        De t sacamos el ancestro.
-        Sacamos el ancestro del ancestro del ancestro ... hasta
-        llegar a la fuente.
-        vertice->temp_aux guarda el flujo que se podria mandar
-        hasta tal vertice.
-    */
     assert(D);
     
     u64 flujo = D->resumidero->temp_flujo;
@@ -436,10 +442,15 @@ u64 AumentarFlujo(DovahkiinP D) {
         aux_l = destruir_lado(aux_l);
         vertice_actual = vertice_actual->ancestro;
     }
+    /*  Se actualiza el valor del flujo en el network. */
     D->flujo += flujo;
     return flujo;
 }
 
+/*  Hace lo mismo que AumentarFlujo, pero además imprime el camino aumentante en orden inverso; i.e.,
+    desde el resumidero a la fuente.
+    La fuente será imprimida como 's', el resumidero como 't' y el resto de los vértices como fueron
+    nombrados al momento de ejecutar LeerUnLado. */
 u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     assert(D);
     
@@ -463,6 +474,10 @@ u64 AumentarFlujoYTambienImprimirCamino(DovahkiinP D) {
     return flujo;
 }
 
+/*  Imprime el flujo en cada lado, indicando al principio si se trata de un flujo maximal o no. 
+    Observar que no es necesario recorrer los lados backward de cada uno de los vértices, pues
+    cada lado que se encuentre en una lista de vecinos backward de un vértice también se encuentra
+    en alguna lista de vecinos forward de otro vértice. */
 void ImprimirFlujo(DovahkiinP D){
     assert(D);
     
@@ -480,9 +495,11 @@ void ImprimirFlujo(DovahkiinP D){
     
     
     while(member_v) {
+        /*  Por cada uno de los vértices del network...*/
         v_actual = get_content(member_v);
         member_l = list_get_first(v_actual->vecinos_forward);
         while(member_l) {
+            /*  ...recorrer cada uno de sus lados forward e imprimir su información. */
             lado = get_content(member_l);
             printf("Lado %" PRIu64 ",%" PRIu64 ": %" PRIu64 "\n", lado->x->nombre, lado->y->nombre, lado->f);
             member_l = list_next(member_l);
@@ -491,6 +508,8 @@ void ImprimirFlujo(DovahkiinP D){
     }
 }
 
+/*  Imprime el valor del flujo en el network, indicando si se trata de un flujo maximal o no.
+    Observar que D->flujo fue actualizado cada vez que se llamó a AumentarFlujo. */
 void ImprimirValorFlujo(DovahkiinP D) {
     assert(D);
     
@@ -502,6 +521,8 @@ void ImprimirValorFlujo(DovahkiinP D) {
     }
 }
 
+/*  Imprime el corte minimal obtenido en la última llamada a ActualizarDistancias, que debe haber
+    devuelto un valor de 0, pues no hubo modo de llegar al resumidero desde la fuente. */
 void ImprimirCorte(DovahkiinP D) {
     assert(D);
     assert(D->corte);
@@ -518,10 +539,14 @@ void ImprimirCorte(DovahkiinP D) {
     
     printf("\nCorte Minimal: S = {");
     
+    /*  El siguiente bucle obtiene la capacidad del corte, constituida ésta por la suma de las
+        capacidades en los lados que van desde un vértice del corte a un vértice fuera del mismo. */
     while(member) {
+        /*  Se itera sobre cada uno de los vértices del network. */
         v_actual = get_content(member);
         member_l = list_get_first(v_actual->vecinos_forward);
         while(member_l) {
+            /*  Se itera sobre cada uno de los lados del vértice v_actual. */
             lado = get_content(member_l);
             if(!list_search(D->corte, lado->y, &comparar_lados)) {
                 capacidad += lado->c;
@@ -542,8 +567,4 @@ void ImprimirCorte(DovahkiinP D) {
     
     printf("Capacidad: %" PRIu64, capacidad);
     
-}
-
-u64 min(u64 a, u64 b) {
-    return (a <= b ? a : b);
 }
