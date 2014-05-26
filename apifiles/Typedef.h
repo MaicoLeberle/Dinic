@@ -4,6 +4,9 @@
 #define LadoNulo ((Lado)(NULL))
 #include <stdint.h>
 
+/*  Notar que a lo largo de todo el proyecto se utiliza el macro PRIu64 para imprimir,
+    por standard output con printf, números de tipo u64. */
+
 typedef uint64_t u64;
 typedef u64 *u64P;
 typedef struct DovahkiinSt *DovahkiinP;

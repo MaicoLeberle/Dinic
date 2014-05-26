@@ -2,12 +2,18 @@
 
 #define MAX_SIZE 50 //No quiero tener problemas con esto , doy mas espacio de lo que se necesita
 
+
+
 u64 min(u64 a, u64 b);
 
+/*  Crea y un nuevo Dovahkiin y devuelve un puntero (DovahkiinP) a éste en caso de que
+    todo haya salido bien, o NULL en caso contrario. */
 DovahkiinP NuevoDovahkiin() {
     DovahkiinP new = calloc(1, sizeof(struct DovahkiinSt));
     
     if(new) {
+        /*  Se setean todos los atributos con valores que representan el network vacío y sin
+            ningún tipo de ejecución. */
         new->fuente = NULL;
         new->resumidero = NULL;
         new->flujo = 0;
@@ -21,50 +27,75 @@ DovahkiinP NuevoDovahkiin() {
     return new;
 }
 
+/*  Destruye D y libera su memoria, retornando 1 si fue posible y 0 si no. */
 int DestruirDovahkiin(DovahkiinP D) {
     assert(D);
     
+    /*  Se limpian todas las listas necesarias para ejecutar los algoritmos requeridos. */
     if(D->data) {
         D->data = list_destroy(D->data, &destruir_vertice);
     }
     if(D->temp) {
         D->temp = list_destroy_keep_members(D->temp); 
     }
+    if(D->corte) {
+        D->corte = list_destroy_keep_members(D->corte);
+    }
     free(D);
     D = NULL;
     return 1;
 }
 
+/*  FijarFuente asegura que se fija el número x como la fuente del network D. */
 void FijarFuente(DovahkiinP D, u64 x) {
     assert(D);
     
+    /*  Se crea un vértice auxiliar para chequear si el vértice que se desea asignar como
+        fuente ya existe. */
     VerticeP v = crear_vertice(x);
+    /*  Se busca el vértice en la lista de vértices del network. */
     VerticeP check = list_search(D->data, v, &comparar_vertice);
 
     if(check) {
+        /*  Si el vértice ya existe, se registra como fuente y se elimina el vértice 
+            auxiliar. */
         D->fuente = check;
         v = destruir_vertice(v);
     } else {
+        /*  Si el vértice no existe, se lo agrega a la lista de vértices del network y se
+            registra como fuente. */
         D->data = list_add(D->data, v);
         D->fuente = v;
     }
 }
 
+/*  FijarResumidero asegura que se fija el número x como el resumidero del network D. */
 void FijarResumidero(DovahkiinP D, u64 x) {
     assert(D);
     
+    /*  Se crea un vértice auxiliar para chequear si el vértice que se desea asignar como
+        resumidero ya existe. */
     VerticeP v = crear_vertice(x);
+    /*  Se busca el vértice en la lista de vértices del network. */
     VerticeP check = list_search(D->data, v, &comparar_vertice);
     
     if(check) {
+        /*  Si el vértice ya existe, se registra como resumidero y se elimina el vértice 
+            auxiliar. */
         D->resumidero = check;
         v = destruir_vertice(v);
     } else {
+        /*  Si el vértice no existe, se lo agrega a la lista de vértices del network y se
+            registra como resumidero. */
         D->data = list_add(D->data, v);
         D->resumidero = v;
     }
 }
 
+/*  Se imprime por standard output 
+    "Fuente: x"
+    , con x la fuente ya fijada a través de FijarFuente y devuelve 0,
+    o devuelve -1 en caso de que la fuente no esté fijada. */
 int ImprimirFuente(DovahkiinP D) {
     assert(D);
     
@@ -78,6 +109,7 @@ int ImprimirFuente(DovahkiinP D) {
     return result;
 }
 
+/*  Hace lo análogo a ImprimirFuente, pero con el resumidero. */
 int ImprimirResumidero(DovahkiinP D) {
     assert(D);
     
@@ -91,10 +123,24 @@ int ImprimirResumidero(DovahkiinP D) {
     return result;
 }
 
-static uint64_t atoi64(char *s) {
-    /*
-        No se checkea si hay overflow !!!
+/*  La siguiente función convierte un string en un número de tipo u64.
+    Básicamente, agarra cada uno de los dígitos del string, desde el más
+    grande al más pequeño, y multiplica el valor actual del resultado por 10
+    y le suma el último dígito leido.
+    Por ejemplo, para pasar de "1234" a se debe realizar lo siguiente:
+    result := (result * 10) + ('1' - '0')
+            = (0 * 10) + 1
+            = 0 + 1
+            = 1
+    result := (result*10) + ('2' - '0')
+            = (1*10) + 2
+            = 12
+    result := 12*10 + 3
+            = 123
+    result := 123*10 + 4
+            = 1234
     */
+static uint64_t atoi64(char *s) {
     uint64_t result = 0;
     char c = *s++;
     
@@ -105,6 +151,8 @@ static uint64_t atoi64(char *s) {
 	
 	return result;
 }
+
+/*  is_valid chequea que s esté enteramente compuesto por dígitos. */
 static bool is_valid(char *s) {
     bool valid = false;
     char c = '\0';
@@ -121,13 +169,22 @@ static bool is_valid(char *s) {
     return valid;
 }
 
+/*  Lee, desde standard output,
+    "x y c"
+    , representando un lado, con 'x' un vértice, 'y' otro vértice y 'c' la capacidad del 
+    vértice, y devuelve un puntero a struct Lado que representa este nuevo lado, o LadoNulo
+    en caso de que la linea no sea válida.
+    Una línea no es válida si 'x' o 'y' no son un valor de tipo u64. */
 Lado LeerUnLado() {
     /*
         La funcion lee una linea desde stdin que representara un lado
         y devuelve el elemento de tipo Lado que represente este lado si
         la linea es valida , o bien LadoNulo si la linea no es valida.
     */
+    /*  buffer representa un buffer para leer desde standard input con fgets. */
     char *buffer = calloc(MAX_SIZE, sizeof(uint8_t));
+    /*  tokenx, tokeny y tokenx representan los números 'x', 'y' y 'c' no convertidos a u64
+        todavía. */
     char *tokenx, *tokeny, *tokenc;
     VerticeP x = NULL;
     VerticeP y = NULL;
@@ -138,6 +195,9 @@ Lado LeerUnLado() {
         tokeny = strtok(NULL, " ");
         tokenc = strtok(NULL, "\n");
         if(is_valid(tokenx) && is_valid(tokeny) && is_valid(tokenc)){
+            /*  Si los valores ingresados son válidos, se deben crear los vértices y el lado
+                correspondiente. Aquí no hay problema de que se cree un vértice ya existente,
+                pues esto será corregido en CargarUnLado. */
             x = crear_vertice(atoi64(tokenx));
             y = crear_vertice(atoi64(tokeny));
             new = crear_lado(x, y, atoi64(tokenc));
@@ -148,10 +208,14 @@ Lado LeerUnLado() {
     return new;
 }
 
+/*  Carga en D un lado que fue creado previamente por LeerUnLado. Su flujo inicial es 0. */
 int CargarUnLado(DovahkiinP D, LadoP L) {
     assert(D);
     assert(L);
     
+    /*  Se deben buscar los vértices a los que asignárseles L en sus listas de vecinos 
+        (forward o backward, según corresponda).
+        Además, se debe crear el nodo para cada una de las listas a modificar. */
     VerticeP x = (VerticeP)list_search(D->data, L->x, &comparar_vertice);
     VerticeP y = (VerticeP)list_search(D->data, L->y, &comparar_vertice);
     member_t new = member_create(L);
@@ -159,16 +223,26 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
     int result = 0;
     
     if(x == NULL) {
+        /*  Si no se encontró el vértice de salida, se debe agregarlo a la lista de 
+            vértices del network. */
         D->data = list_add(D->data, L->x);
     }
     else {
+        /*  Si se encontró el vértice de salida, se debe eliminar el vértice de 
+            salida que se asignó al lado L al momento de crearlo, y en cambio asignarle
+            el vértice encontrado. */
         L->x = destruir_vertice(L->x);
         L->x = x;
     }
     if(y == NULL) {
+        /*  Si no se encontró el vértice de llegada, se debe agregarlo a la lista de 
+            vértices del network. */
         D->data = list_add(D->data, L->y);
     }
     else {
+        /*  Si se encontró el vértice de llegada, se debe eliminar el vértice de 
+            llegada que se asignó al lado L al momento de crearlo, y en cambio asignarle
+            el vértice encontrado. */
         L->y = destruir_vertice(L->y);
         L->y = y;
     }
@@ -180,6 +254,7 @@ int CargarUnLado(DovahkiinP D, LadoP L) {
     return result;
 }
 
+/*  Simplemente verifica que la fuente y el resumidero estén fijados. */
 int Prepararse(DovahkiinP D) {
     assert(D);
     
@@ -417,7 +492,7 @@ void ImprimirCorte(DovahkiinP D) {
         D->temp = list_create();
     }
     
-    printf("Corte Minimal: S = {");
+    printf("\nCorte Minimal: S = {");
     
     while(member) {
         v_actual = get_content(member);
