@@ -195,6 +195,9 @@ Lado LeerUnLado() {
         tokenx = strtok(buffer, " ");
         tokeny = strtok(NULL, " ");
         tokenc = strtok(NULL, "\n");
+        if(tokenc[strlen(tokenc) - 1] == '\r') {
+            tokenc[strlen(tokenc) - 1] = '\0';
+        }
         if(is_valid(tokenx) && is_valid(tokeny) && is_valid(tokenc)){
             /*  Si los valores ingresados son válidos, se deben crear los vértices y el lado
                 correspondiente. Aquí no hay problema de que se cree un vértice ya existente,
@@ -323,7 +326,7 @@ int ActualizarDistancias(DovahkiinP D) {
     Actualiza los datos del primer vértice posible después de x(por ser DFS), modificando el ancestro
     de dicho vértice, el flujo temporal de éste y se indica si es encontrado en el camino de la fuente
     al resumidero a través de un lado forward o backward. */
-VerticeP avanzar(VerticeP x, u64 *flujo) {
+VerticeP avanzar(VerticeP x, VerticeP fuente, VerticeP resumidero, u64 *flujo) {
     assert(x);
     
     VerticeP next = x;
@@ -332,17 +335,20 @@ VerticeP avanzar(VerticeP x, u64 *flujo) {
 
     if(comparar_vertice(x, lado->x)) {
         /*  El vértice de salida es el propio x. */
-        if(lado->c - lado->f) {
+        if((lado->y->distancia <= resumidero->distancia) &&  (lado->c - lado->f)) {
             /*  El lado no está saturado. */
             posible = true;
             next = lado->y;
+            if(comparar_vertice(fuente, x)) {
+                *flujo = (u64)INFINITY;
+            }
             *flujo = min(*flujo, lado->c - lado->f);
             next->is_forward = true;
         }
     }
     else {
         /*  El vértice de salida no es x, por lo que se llega a x a través de un lado backward. */
-        if(lado->f) {
+        if((lado->x->distancia <= resumidero->distancia) && lado->f) {
             /*  Se ha enviado flujo por este lado. */
             posible = true;
             next = lado->x;
@@ -363,8 +369,9 @@ VerticeP avanzar(VerticeP x, u64 *flujo) {
 /*  Esta función se utiliza para indicar que x no es el comienzo de un subcamino al resumidero.
     Simplemente elimina el primer vértice de vecinos posibles del ancestro de x; i.e., x.
     Devuelve el ancestro de x, para que siga buscando desde allí. */
-VerticeP retroceder(VerticeP x) {
+VerticeP retroceder(VerticeP x, u64 *flujo) {
     assert(x);
+    *flujo = x->ancestro->temp_flujo;
     x->ancestro->vecinos_posibles = remove_first_keep_content(x->ancestro->vecinos_posibles);
     return x->ancestro;
 }
@@ -387,14 +394,14 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
             recorrer. */
         if(!list_empty(vertice_actual->vecinos_posibles)) {
             /*  Si todavía hay vecinos que recorrer, avanzar. */
-            vertice_actual = avanzar(vertice_actual, &flujo);
+            vertice_actual = avanzar(vertice_actual, D->fuente, D->resumidero, &flujo);
         }
         else if(!comparar_vertice(D->fuente, vertice_actual)) {
             /*  Si no hay vecinos posibles, y no se llegó al resumidero, entonces retroceder. */
-            vertice_actual = retroceder(vertice_actual);
+            vertice_actual = retroceder(vertice_actual, &flujo);
         }
         else {
-            /*  Se llegó al resumidero, por lo que se debe frenar aquí la búsqueda. */
+            /*  No se llegó al resumidero, por lo que se debe frenar aquí la búsqueda. */
             continuar = false;
         }
     }
