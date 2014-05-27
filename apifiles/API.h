@@ -37,6 +37,8 @@ struct DovahkiinSt {
 		de la fuente al resumidero. */
 	unsigned int iteracion;
 	/*	flujo_maximal == true sii ya se ha hallado un flujo maximal. */
+	unsigned int cantidad_busqueda;
+	unsigned int cantidad_aumento;
 	bool flujo_maximal;
 };
 

@@ -24,6 +24,8 @@ DovahkiinP NuevoDovahkiin() {
         new->temp = list_create();
         new->iteracion = 0;
         new->flujo_maximal = false;
+        new->cantidad_busqueda = 0;
+        new->cantidad_aumento = 0;
     }
     
     return new;
@@ -398,7 +400,8 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
     }
     if(comparar_vertice(D->resumidero, vertice_actual)) {
         /*  La razón por la que se salío del bucle while es que se llegó al resumidero. */
-        result = 1; 
+        result = 1;
+        D->cantidad_busqueda += 1;
     }
     
     return result;
@@ -413,7 +416,9 @@ int BusquedaCaminoAumentante(DovahkiinP D) {
     involucrados. */
 u64 AumentarFlujo(DovahkiinP D) {
     assert(D);
+    assert(D->cantidad_busqueda == D->cantidad_aumento + 1);
     
+    D->cantidad_aumento += 1;
     u64 flujo = D->resumidero->temp_flujo;
     VerticeP vertice_actual = D->resumidero;
     LadoP lado = NULL, aux_l = NULL;
