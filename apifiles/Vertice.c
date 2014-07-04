@@ -61,7 +61,7 @@ list_t buscar_vecinos_posibles(VerticeP v) {
     
     while(member) {
         temp = get_content(member);
-        if((v->distancia == temp->y->distancia - 1) && (temp->c - temp->f > 0)) {
+        if((v->distancia == temp->y->distancia - 1 && v->iteracion == temp->y->iteracion) && (temp->c - temp->f > 0)) {
             v->vecinos_posibles = list_add(v->vecinos_posibles, temp);
         }
         member = list_next(member);
@@ -71,7 +71,7 @@ list_t buscar_vecinos_posibles(VerticeP v) {
     
     while(member) {
         temp = get_content(member);
-        if((v->distancia == temp->x->distancia - 1) && temp->f > 0) {
+        if((v->distancia == temp->x->distancia - 1 && v->iteracion == temp->x->iteracion) && temp->f > 0) {
             v->vecinos_posibles = list_add(v->vecinos_posibles, temp);
         }
         member = list_next(member);
